@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory, render_template_
 from flask_cors import CORS
 import sqlite3
 import socket
+import logging
 
 app = Flask(__name__)
 
@@ -68,10 +69,6 @@ def get_local_ip():
         s.close()
     return ip_address
 
-# print navigation links to the console with the local IP address of the computer and the port number of the Flask app with the input and display frontend routes
-print(f"Display frontend: http://{get_local_ip()}:5000/display")
-print(f"Input frontend: http://{get_local_ip()}:5000/input")
-
 # Route to serve the display frontend
 @app.route('/display')
 def serve_display_frontend():
@@ -116,12 +113,13 @@ def after_request(response):
     return response
 
 if __name__ == '__main__':
+    # Suppress logs
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
+
     init_db()
-    app.run(debug=True, host='0.0.0.0')
-    print("")
     print("################################")
     print(f"Display frontend: http://{get_local_ip()}:5000/display")
     print(f"Input frontend: http://{get_local_ip()}:5000/input")
     print("################################")
-
-    
+    app.run(debug=True, host='0.0.0.0')
