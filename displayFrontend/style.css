@@ -1,0 +1,21 @@
+/* Add styles for your CSS classes here */
+
+.class1 {
+    font-family: Arial, sans-serif;
+    color: #000000;
+    font-weight: bold;
+}
+
+.class2 {
+    font-family: Arial, sans-serif;
+    color: #000000;
+    font-weight: medium;
+}
+
+.class3 {
+    font-family: Arial, sans-serif;
+    color: #000000;
+    font-weight: light;
+    //make it italic
+    font-style: italic;
+}
