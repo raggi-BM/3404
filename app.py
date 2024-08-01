@@ -122,4 +122,4 @@ if __name__ == '__main__':
     print(f"Display frontend: http://{get_local_ip()}:5000/display")
     print(f"Input frontend: http://{get_local_ip()}:5000/input")
     print("################################")
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=False, host='0.0.0.0')
