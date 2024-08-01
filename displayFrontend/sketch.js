@@ -104,7 +104,7 @@ function draw() {
 }
 
 function fetchWords() {
-    fetch(`http://127.0.0.1:5000/strings?page=${page}&per_page=${perPage}`)
+    fetch(`http://{{ ip_address }}:5000/strings?page=${page}&per_page=${perPage}`)
         .then(response => response.json())
         .then(data => {
             if (data.data.length > 0) {
@@ -132,7 +132,7 @@ function fetchWords() {
 function fetchNewWords() {
     if (!allWordsFetched) return;
 
-    fetch(`http://127.0.0.1:5000/strings?page=${page}&per_page=${perPage}`)
+    fetch(`http://{{ ip_address }}:5000/strings?page=${page}&per_page=${perPage}`)
         .then(response => response.json())
         .then(data => {
             if (data.data.length > 0) {

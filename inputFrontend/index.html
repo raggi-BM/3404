@@ -65,12 +65,13 @@
             const stringInput = document.getElementById('stringInput').value;
             const messageDiv = document.getElementById('message');
 
-            fetch('http://127.0.0.1:5000/store_string', {
+            fetch(`http://{{ ip_address }}:5000/store_string`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ string: stringInput })
+                body: JSON.stringify({ string: stringInput }),
+                credentials: 'include'  // Add this line to include credentials
             })
             .then(response => response.json())
             .then(data => {
