@@ -118,3 +118,10 @@ def after_request(response):
 if __name__ == '__main__':
     init_db()
     app.run(debug=True, host='0.0.0.0')
+    print("")
+    print("################################")
+    print(f"Display frontend: http://{get_local_ip()}:5000/display")
+    print(f"Input frontend: http://{get_local_ip()}:5000/input")
+    print("################################")
+
+    
