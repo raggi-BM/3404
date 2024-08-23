@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderator Dashboard</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 200px;
+        }
+
+        #search {
+            width: 100%;
+            padding: 8px;
+            padding-right: 25px;
+            /* Add padding to make space for the 'x' button */
+            margin-bottom: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s ease-in-out;
+            box-sizing: border-box;
+        }
+
+        #clear-search {
+            position: absolute;
+            top: 3px;
+            right: 10px;
+            cursor: pointer;
+            display: none;
+            /* Initially hidden */
+            font-size: 18px;
+            color: #891af5;
+            line-height: 1;
+        }
+
+
+        .section {
+            padding: 40px;
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            background-color: #891af5;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .ModeratorTitle {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .ModeratorTitle h1 {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #891af5;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            color: #495057;
+            margin: 0;
+        }
+
+        /* Grid Layout */
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 12fr;
+            gap: 40px;
+        }
+
+        /* Right Column (Table) */
+        .right-column {
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        /* Input Styles */
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s ease-in-out;
+        }
+
+        input[type="text"]:focus {
+            border-color: #495057;
+            outline: none;
+        }
+
+        /* Checkbox Container Styles */
+        .checkbox-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-container label {
+            display: flex;
+            align-items: center;
+            font-size: 1em;
+            color: #495057;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #891af5;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        thead {
+            display: none;
+            /* Hide the table header */
+        }
+
+        th,
+        td {
+            padding: 15px 15px;
+            text-align: left;
+        }
+
+        tbody tr:first-child td {
+            border-top: 2px solid #891af5;
+            /* Add top border to the first row */
+        }
+
+        td {
+            border-bottom: 1px solid #891af5;
+            color: #495057;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Toggle Switch Styles */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #891af5;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Delete Button Styles */
+        .delete-button {
+            background-color: #891af5;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            margin-left: -7px;
+            padding: 6px 12px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
+            width: 100%;
+            text-align: center;
+        }
+
+        .delete-button:hover {
+            background-color: #7a18e2;
+        }
+
+        .unapproved {
+            background-color: #dbdbdb;
+            /* Light gray background for the entire row */
+            color: #a0a0a0;
+            /* Gray text color */
+        }
+
+        .unapproved td {
+            border-bottom: 1px solid #808080;
+            /* Red bottom border for each cell in the row */
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+
+
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                text-align: center;
+            }
+
+            .checkbox-container {
+                flex-direction: row;
+                justify-content: space-around;
+            }
+
+            input[type="text"] {
+                width: 100%;
+            }
+
+            .left-column {
+                width: 100%;
+                box-sizing: border-box;
+                /* Include padding and border in width */
+                padding: 0 15px;
+                /* Optional padding to add space around content */
+            }
+
+
+
+
+        .search-container  {
+                max-width: 100%;
+                width: 100%;
+                /* Ensure the input fills the parent width */
+                box-sizing: border-box;
+                /* Include padding and border in width */
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="logo-container section">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="MFA Boston Logo">
+    </div>
+
+    <div class="section" style="background-color: #ffffff;">
+        <div class="container">
+            <div class="left-column">
+                <div class="ModeratorTitle">
+                    <h1>A.I. Moderation Dashboard</h1>
+                </div>
+
+                <div class="search-container">
+                    <input type="text" id="search" placeholder="Search...">
+                    <span id="clear-search">&times;</span>
+                </div>
+
+
+                <div class="checkbox-container">
+                    <label for="filter-approved">
+                        <input type="checkbox" id="filter-approved" checked>
+                        Show Approved
+                    </label>
+
+                    <label for="filter-unapproved">
+                        <input type="checkbox" id="filter-unapproved" checked>
+                        Show Unapproved
+                    </label>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <table id="moderator-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Show</th>
+                            <th>User Input</th>
+                            <th style="width: 70px;">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Rows will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const socket = io.connect('http://{{ ip_address }}:5000');
+            const searchInput = document.getElementById('search');
+            const clearSearch = document.getElementById('clear-search');
+
+            // Show or hide the clear button based on input value
+            searchInput.addEventListener('input', function () {
+                if (searchInput.value.trim() !== '') {
+                    clearSearch.style.display = 'block';
+                } else {
+                    clearSearch.style.display = 'none';
+                }
+            });
+
+            // Clear the search input when the clear button is clicked
+            clearSearch.addEventListener('click', function () {
+                searchInput.value = '';
+                clearSearch.style.display = 'none';
+                searchInput.focus(); // Focus back to the input after clearing
+                fetchData(); // Re-fetch the data with the cleared search input
+            });
+
+            const filterApproved = document.getElementById('filter-approved');
+            const filterUnapproved = document.getElementById('filter-unapproved');
+            const tableBody = document.getElementById('table-body');
+
+            socket.on('all_words', function (strings) {
+                renderTable(strings);
+            });
+
+            function fetchData(page = 1, allData = []) {
+                fetch(`http://{{ ip_address }}:5000/get_all?page=${page}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const strings = data.data;
+                        allData = allData.concat(strings);
+
+                        if (page < data.total_pages) {
+                            fetchData(page + 1, allData);
+                        } else {
+                            renderTable(allData);
+                        }
+                    })
+                    .catch(error => console.error('Error fetching data:', error));
+            }
+
+            function renderTable(strings) {
+                tableBody.innerHTML = '';
+
+                strings.forEach(row => {
+                    if ((row.approved && !filterApproved.checked) || (!row.approved && !filterUnapproved.checked)) {
+                        return;
+                    }
+
+                    if (searchInput.value && !row.string.toLowerCase().includes(searchInput.value.toLowerCase())) {
+                        return;
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.className = row.approved ? '' : 'unapproved';
+                    tr.innerHTML = `
+                <td class="toggle-container" style="width: 70px;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" ${row.approved ? 'checked' : ''} onchange="toggleApproval(${row.id}, this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </td>
+                <td>${row.string}</td>
+                <td style="width: 70px;">
+                    <button class="delete-button" onclick="deleteString(${row.id})">Delete</button>
+                </td>
+            `;
+                    tableBody.appendChild(tr);
+                });
+            }
+
+            window.toggleApproval = function (id, approved) {
+                console.log(`Toggling approval for ID ${id} to ${approved}`);
+                fetch(`http://{{ ip_address }}:5000/approve_string/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ approved })
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to toggle approval');
+                        }
+                        return response.json();
+                    })
+                    .then(() => fetchData())
+                    .catch(error => console.error('Error toggling approval:', error));
+            };
+
+            window.deleteString = function (id) {
+                console.log(`Deleting string with ID ${id}`);
+                fetch(`http://{{ ip_address }}:5000/delete_string/${id}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to delete string');
+                        }
+                        return response.json();
+                    })
+                    .then(() => fetchData())
+                    .catch(error => console.error('Error deleting string:', error));
+            };
+
+            searchInput.addEventListener('input', () => fetchData());
+            filterApproved.addEventListener('change', () => fetchData());
+            filterUnapproved.addEventListener('change', () => fetchData());
+
+            fetchData();
+        });
+    </script>
+
+</body>
+
+</html>

@@ -5,88 +5,203 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>String Storage</title>
     <style>
+        /* Global Styles */
         body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f5f5f5;
-            margin: 0;
-            font-family: Arial, sans-serif;
+            line-height: 1.6;
         }
 
         .container {
             background-color: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
+            max-width: 400px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2em;
+            font-weight: 300;
+            color: #495057;
+            margin: 0 0 20px;
         }
 
         input[type="text"] {
-            width: 80%;
+            width: 100%;
             padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 25px;
-            font-size: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s ease-in-out;
+            text-align: center;
+        }
+
+        input[type="text"]:focus {
+            border-color: #495057;
+            outline: none;
+        }
+
+        input[type="text"]:disabled {
+            background-color: #f8f9fa;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
         }
 
         button {
-            padding: 10px 20px;
+            width: 40px;
+            height: 40px;
             border: none;
-            border-radius: 25px;
-            background-color: #007bff;
+            border-radius: 50%;
+            background-color: #cccccc;
             color: white;
             font-size: 16px;
             cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
         }
 
-        button:hover {
-            background-color: #0056b3;
+        button.active {
+            width: 150px;
+            height: 40px;
+            border-radius: 20px;
+            background-color: #891af5;
+            opacity: 1;
         }
 
-        .message {
-            margin-top: 20px;
-            font-size: 16px;
+        button.loading {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            padding: 0;
+            background-color: #cccccc;
         }
+
+        button.loading::before {
+            content: '';
+            border: 3px solid transparent;
+            border-top: 3px solid #891af5;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            position: absolute;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Store Your String</h1>
-        <input type="text" id="stringInput" placeholder="Enter your string here">
-        <button onclick="storeString()">Submit</button>
-        <div id="message" class="message"></div>
+        <!-- <h1>Store Your String</h1> -->
+        <input type="text" id="stringInput" placeholder="what are you'r thoughts on democracy?" onfocus="clearPlaceholder()" onblur="restorePlaceholder()" oninput="checkInput()">
+        <div class="button-container">
+            <button id="submitButton" onclick="storeString()" disabled></button>
+        </div>
     </div>
 
     <script>
-        function storeString() {
-            const stringInput = document.getElementById('stringInput').value;
-            const messageDiv = document.getElementById('message');
+        function checkInput() {
+            const stringInput = document.getElementById('stringInput').value.trim();
+            const submitButton = document.getElementById('submitButton');
 
-            fetch(`http://{{ ip_address }}:5000/store_string`, {
+            if (stringInput) {
+                submitButton.disabled = false;
+                submitButton.classList.add('active');
+                submitButton.textContent = 'Submit';
+            } else {
+                submitButton.disabled = true;
+                submitButton.classList.remove('active');
+                submitButton.textContent = '';
+            }
+        }
+
+        function clearPlaceholder() {
+            const stringInput = document.getElementById('stringInput');
+            stringInput.setAttribute('data-placeholder', stringInput.placeholder);
+            stringInput.placeholder = '';
+        }
+
+        function restorePlaceholder() {
+            const stringInput = document.getElementById('stringInput');
+            if (stringInput.value.trim() === '') {
+                stringInput.placeholder = stringInput.getAttribute('data-placeholder');
+            }
+        }
+
+        function storeString() {
+            const stringInput = document.getElementById('stringInput');
+            const submitButton = document.getElementById('submitButton');
+
+            const stringValue = stringInput.value.trim();
+
+            stringInput.value = '';
+            stringInput.placeholder = 'Processing your string...';
+            stringInput.disabled = true;
+
+            submitButton.disabled = true;
+            submitButton.classList.add('loading');
+            submitButton.textContent = ''; // Remove the text content for the loading animation
+
+            fetch('http://{{ ip_address }}:5000/store_string', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ string: stringInput }),
-                credentials: 'include'  // Add this line to include credentials
+                body: JSON.stringify({ string: stringValue }),
+                credentials: 'include'
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.message) {
-                    messageDiv.textContent = data.message;
-                    messageDiv.style.color = 'green';
+                    console.log('Success:', data.message);
                 } else if (data.error) {
-                    messageDiv.textContent = data.error;
-                    messageDiv.style.color = 'red';
+                    console.error('Error:', data.error);
                 }
-                document.getElementById('stringInput').value = ''; // Clear the input field
             })
             .catch(error => {
-                messageDiv.textContent = 'Error: ' + error;
-                messageDiv.style.color = 'red';
+                console.error('Error:', error.message);
+            })
+            .finally(() => {
+                stringInput.disabled = false;
+                stringInput.placeholder = "what are you'r thoughts on democracy?";
+                submitButton.disabled = true; // Keep the button disabled until new input
+                submitButton.classList.remove('loading');
+                submitButton.classList.remove('active');
+                submitButton.textContent = ''; // Reset to initial state
             });
         }
     </script>
