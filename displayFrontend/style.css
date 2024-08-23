@@ -1,21 +1,31 @@
-/* Add styles for your CSS classes here */
-
-.class1 {
-    font-family: Arial, sans-serif;
-    color: #000000;
-    font-weight: bold;
+/* Remove default margin and padding from body, hide overflow */
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Hides both vertical and horizontal scrollbars */
 }
 
-.class2 {
-    font-family: Arial, sans-serif;
-    color: #000000;
-    font-weight: medium;
+/* Remove any border, padding, and scrollbars from the canvas */
+canvas {
+    display: block; /* Ensures no extra space around the canvas */
+    margin: 0;
+    padding: 0;
+    border: none; /* Ensures no border around the canvas */
+    outline: none; /* Removes any outline that might appear */
 }
 
-.class3 {
-    font-family: Arial, sans-serif;
-    color: #000000;
-    font-weight: light;
-    //make it italic
-    font-style: italic;
+/* Hide scrollbars for all elements (including body) */
+body::-webkit-scrollbar, 
+canvas::-webkit-scrollbar {
+    display: none; /* Hide scrollbars in WebKit browsers (Chrome, Safari) */
+}
+
+body {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* CSS class to hide the cursor */
+.hide-cursor {
+    cursor: none;
 }

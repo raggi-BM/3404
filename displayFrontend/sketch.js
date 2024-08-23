@@ -4,6 +4,7 @@ let wordQueue = [];
 let wordIds = new Set(); // Track ids of words currently displayed
 let page = 1;
 let perPage = 50;
+let currentZIndex = 99999;
 let allWordsFetched = false;
 let collisionForce = 0.1;
 let dragForce = 0.98;
@@ -15,10 +16,39 @@ let dragForceSlider;
 let showBoundingBoxesCheckbox;
 
 let wordSprites;
-let cssClasses = ['class1', 'class2', 'class3'];
+
+let inactivityTimeout;
+
+// Function to hide the cursor
+function hideCursor() {
+    document.body.classList.add('hide-cursor');
+}
+
+// Function to reset the timer and show the cursor again
+function resetInactivityTimer() {
+    // Show the cursor when there's activity
+    document.body.classList.remove('hide-cursor');
+    
+    // Clear the previous timeout
+    clearTimeout(inactivityTimeout);
+    
+    // Set a new timeout to hide the cursor after n seconds (e.g., 5 seconds)
+    inactivityTimeout = setTimeout(hideCursor, 1000); // 5000 ms = 5 seconds
+}
+
+// Add event listeners for user activity
+document.addEventListener('mousemove', resetInactivityTimer);
+document.addEventListener('keydown', resetInactivityTimer);
+
+// Start the inactivity timer when the page loads
+resetInactivityTimer();
+
 
 function setup() {
-    createCanvas(windowWidth, windowHeight);
+    // Initial setup
+    resizeCanvasToFullScreen();  // Create the initial canvas with the full potential width and height
+    background('#502d4d');
+
     socket = io.connect(`http://{{ ip_address }}:5000`);
 
     fetchWords();  // Initial fetch to populate the display
@@ -54,23 +84,89 @@ function setup() {
     });
 }
 
+function windowResized() {
+    // Adjust the canvas size dynamically whenever the window is resized
+    resizeCanvasToFullScreen();
+}
+
+function resizeCanvasToFullScreen() {
+    // Get the width and height of the window (viewport)
+    const fullWidth = window.innerWidth;
+    const fullHeight = window.innerHeight;
+
+    // Resize or create the canvas to fit the full screen
+    resizeCanvas(fullWidth, fullHeight);
+
+    // Reapply the background color after resizing
+    background('#502d4d');
+}
+
+function generateRandomCSS() {
+    // Define possible values for each attribute
+    const sizes = ['16px', '20px', '24px', '28px', '32px', '36px'];
+    const backgroundColors = ['#ab5e8a', '#a14330', '#ddb73f', '#a44830', '#7e6792'];
+    const darkFontColors = ['#502d4d', '#3B1E2E'];
+    const lightFontColors = ['#fefbe8', '#fefae7'];
+    const allFontColors = [...darkFontColors, ...lightFontColors]; // Combine both light and dark font colors
+    const fontFamilies = ['Merriweather', 'Oswald', 'Playfair Display', 'Lora', 'Lobster'];
+    const textDecorations = ['none', 'underline'];
+    const paddings = ['5px', '10px', '15px', '20px'];
+    const textAlignments = ['left', 'center', 'right'];
+    const whiteSpaceOptions = ['nowrap', 'normal'];
+
+    // Randomly select values for each attribute
+    const size = sizes[Math.floor(Math.random() * sizes.length)];
+    const backgroundColor = backgroundColors[Math.floor(Math.random() * backgroundColors.length)];
+    const fontFamily = fontFamilies[Math.floor(Math.random() * fontFamilies.length)];
+    const textDecoration = textDecorations[Math.floor(Math.random() * textDecorations.length)];
+    const padding = paddings[Math.floor(Math.random() * paddings.length)];
+    const textAlign = textAlignments[Math.floor(Math.random() * textAlignments.length)];
+    const whiteSpace = whiteSpaceOptions[Math.floor(Math.random() * whiteSpaceOptions.length)];
+
+    // Randomly select a font color from both light and dark colors
+    const fontColor = allFontColors[Math.floor(Math.random() * allFontColors.length)];
+
+    // Generate a unique class name
+    const className = `word-class-${Math.floor(Math.random() * 10000)}`;
+
+    // Create the CSS class
+    const style = `
+        .${className} {
+            font-size: ${size};
+            background-color: ${backgroundColor};
+            font-family: '${fontFamily}', sans-serif;
+            color: ${fontColor};
+            text-decoration: ${textDecoration};
+            padding: ${padding};
+            border-radius: 3px;
+            display: inline-block;
+            text-align: ${textAlign};
+            white-space: ${whiteSpace};
+            
+        }
+    `;
+
+    // Append the style to the document's head
+    const styleSheet = document.createElement("style");
+    styleSheet.type = "text/css";
+    styleSheet.innerText = style;
+    document.head.appendChild(styleSheet);
+
+    return className;
+}
+
 function draw() {
-    background(255);
+    // background(255);
 
     collisionForce = collisionForceSlider.value();
     dragForce = dragForceSlider.value();
     showBoundingBoxes = showBoundingBoxesCheckbox.checked();
 
+    const n = 50; // Replace 50 with your desired threshold in pixels
+
     wordSprites.forEach(wordSprite => {
         wordSprite.velocity.x *= dragForce;
         wordSprite.velocity.y *= dragForce;
-
-        if (wordSprite.position.x - wordSprite.width / 2 < 0 || wordSprite.position.x + wordSprite.width / 2 > width) {
-            wordSprite.velocity.x *= -1;
-        }
-        if (wordSprite.position.y - wordSprite.height / 2 < 0 || wordSprite.position.y + wordSprite.height / 2 > height) {
-            wordSprite.velocity.y *= -1;
-        }
 
         wordSprite.wordDiv.position(wordSprite.position.x - wordSprite.width / 2, wordSprite.position.y - wordSprite.height / 2);
 
@@ -91,6 +187,16 @@ function draw() {
                 wordSprite.width = wordSprite.originalWidth * wordSprite.scale;
                 wordSprite.height = wordSprite.originalHeight * wordSprite.scale;
             }
+        }
+
+        // Check if the object is fully out of the canvas by more than `n` pixels
+        if (
+            wordSprite.position.x + wordSprite.width / 2 < -n || // Out on the left
+            wordSprite.position.x - wordSprite.width / 2 > width + n || // Out on the right
+            wordSprite.position.y + wordSprite.height / 2 < -n || // Out on the top
+            wordSprite.position.y - wordSprite.height / 2 > height + n // Out on the bottom
+        ) {
+            removeWordById(wordSprite.wordId); // Use your existing remove function
         }
     });
 
@@ -142,16 +248,16 @@ function removeWordById(id) {
     let wordObj = wordsMap.get(id);
     if (wordObj) {
         console.log(`Removing sprite for word with id: ${id}`);
-        
+
         // Remove the sprite from the p5.js Group
         wordSprites.remove(wordObj.sprite);
-        
+
         // Remove the sprite from the canvas
         wordObj.sprite.remove();
-        
+
         // Remove the associated <div> element
         wordObj.sprite.wordDiv.remove();
-        
+
         // Remove the word from the tracking structures
         wordsMap.delete(id);
         wordIds.delete(id);
@@ -163,9 +269,10 @@ function removeWordById(id) {
     }
 }
 
-
 function createWordObject(word) {
     let size = random(16, 48);
+    let margin = 20; // Define a uniform margin in pixels
+
     let wordSprite = createSprite(width / 2 + random(-50, 50), height / 2 + random(-50, 50));
     let wordDiv = createDiv(word.string);
     wordDiv.parent('wordContainer'); // Add the div inside the canvas
@@ -174,15 +281,24 @@ function createWordObject(word) {
     wordDiv.style('position', 'absolute');
     wordDiv.style('white-space', 'nowrap');
     wordDiv.style('transform', 'scale(0.01)'); // Start with a small scale
-    wordDiv.class(cssClasses[floor(random(cssClasses.length))]);
+
+    // Decrement the z-index and apply it to the div
+    currentZIndex--;
+    wordDiv.style('z-index', currentZIndex);
+
+    // Generate a random CSS class and apply it
+    const randomClass = generateRandomCSS();
+    wordDiv.class(randomClass);
 
     wordDiv.size(AUTO, AUTO);
     let textWidthValue = wordDiv.elt.offsetWidth;
     let textHeightValue = wordDiv.elt.offsetHeight;
-    wordSprite.originalWidth = textWidthValue;
-    wordSprite.originalHeight = textHeightValue;
-    wordSprite.width = textWidthValue * 0.01; // Start with a small width
-    wordSprite.height = textHeightValue * 0.01; // Start with a small height
+
+    // Increase the width and height to account for the margin
+    wordSprite.originalWidth = textWidthValue + margin;
+    wordSprite.originalHeight = textHeightValue + margin;
+    wordSprite.width = (textWidthValue + margin) * 0.01; // Start with a small width
+    wordSprite.height = (textHeightValue + margin) * 0.01; // Start with a small height
 
     wordSprite.velocity.x = random(-1, 1);
     wordSprite.velocity.y = random(-1, 1);
@@ -193,11 +309,14 @@ function createWordObject(word) {
     wordSprite.easingStart = millis();
 
     wordSprite.wordDiv = wordDiv;
+    wordSprite.wordId = word.id; // Ensure the ID is accessible
     wordSprites.add(wordSprite);
 
     // Store the word object in the map with its id as the key
     wordsMap.set(word.id, { id: word.id, string: word.string, sprite: wordSprite });
 }
+
+
 
 function spawnNextWord() {
     if (wordQueue.length > 0) {
