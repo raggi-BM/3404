@@ -127,7 +127,7 @@ function generateRandomCSS() {
     const fontColor = allFontColors[Math.floor(Math.random() * allFontColors.length)];
 
     // Determine if this div should have a pill shape based on a percentage chance
-    const pillShapeChance = 0.5; // 50% chance to apply the pill shape (adjust this value as needed)
+    const pillShapeChance = 0.2; // 50% chance to apply the pill shape (adjust this value as needed)
     const applyPillShape = Math.random() < pillShapeChance;
 
     // Calculate border-radius if pill shape is applied
