@@ -1,2 +1,9 @@
 Flask==3.0.3
 Flask_Cors==4.0.1
+flask_socketio==5.3.6
+numpy==2.1.0
+opencv_python==4.10.0.84
+Pillow==10.4.0
+Requests==2.32.3
+scikit_learn==1.4.2
+tqdm==4.66.2

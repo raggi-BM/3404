@@ -155,19 +155,70 @@ function generateRandomCSS() {
     return className;
 }
 
-function draw() {
-    // background(255);
+let gravityActive = false;
+let velocityThreshold = 0.5; // Threshold for velocity to trigger gravity
+let settlingThreshold = 0.05; // Lower threshold for stopping the movement
+let newSpriteSpawned = false; // Flag to detect if a new sprite has been spawned
 
+function draw() {
     collisionForce = collisionForceSlider.value();
     dragForce = dragForceSlider.value();
     showBoundingBoxes = showBoundingBoxesCheckbox.checked();
 
-    const n = 50; // Replace 50 with your desired threshold in pixels
+    const margin = 20; // The minimum margin between word objects
+    const dampingFactor = 0.8; // Damping factor to reduce oscillation
+    let anySpriteMoving = false;
 
     wordSprites.forEach(wordSprite => {
-        wordSprite.velocity.x *= dragForce;
-        wordSprite.velocity.y *= dragForce;
+        // Monitor velocity to determine if gravitational pull should be active
+        let spriteVelocity = sqrt(wordSprite.velocity.x * wordSprite.velocity.x + wordSprite.velocity.y * wordSprite.velocity.y);
 
+        if (spriteVelocity > velocityThreshold) {
+            anySpriteMoving = true;
+            gravityActive = true; // Activate gravity if any sprite is moving fast
+        }
+
+        if (gravityActive) {
+            // Calculate the direction towards the center
+            let centerX = width / 2;
+            let centerY = height / 2;
+            let directionX = centerX - wordSprite.position.x;
+            let directionY = centerY - wordSprite.position.y;
+
+            let distanceToCenter = sqrt(directionX * directionX + directionY * directionY);
+
+            // Normalize the direction vector
+            directionX /= distanceToCenter;
+            directionY /= distanceToCenter;
+
+            // Check for other sprites in the way and dampen the attraction
+            wordSprites.forEach(otherSprite => {
+                if (otherSprite !== wordSprite) {
+                    let dx = otherSprite.position.x - wordSprite.position.x;
+                    let dy = otherSprite.position.y - wordSprite.position.y;
+                    let distanceToOther = sqrt(dx * dx + dy * dy);
+
+                    if (distanceToOther < margin) {
+                        // Damp the attraction force if another sprite is too close
+                        directionX *= 0.1;
+                        directionY *= 0.1;
+                    }
+                }
+            });
+
+            // Apply gravitational pull towards the center
+            let gravityForce = 0.02 * distanceToCenter;
+            wordSprite.velocity.x += directionX * gravityForce;
+            wordSprite.velocity.y += directionY * gravityForce;
+
+            // Apply drag force and damping to reduce oscillation
+            wordSprite.velocity.x *= dragForce;
+            wordSprite.velocity.y *= dragForce;
+        }
+
+        // Update the position of the corresponding word div
+        wordSprite.position.x += wordSprite.velocity.x;
+        wordSprite.position.y += wordSprite.velocity.y;
         wordSprite.wordDiv.position(wordSprite.position.x - wordSprite.width / 2, wordSprite.position.y - wordSprite.height / 2);
 
         if (wordSprite.easing) {
@@ -184,39 +235,210 @@ function draw() {
                 wordSprite.scale = wordSprite.originalScale;
                 wordSprite.easing = false;
                 wordSprite.wordDiv.style('transform', `scale(${wordSprite.scale})`);
-                wordSprite.width = wordSprite.originalWidth * wordSprite.scale;
-                wordSprite.height = wordSprite.originalHeight * wordSprite.scale;
+                wordSprite.width = wordSprite.originalWidth;
+                wordSprite.height = wordSprite.originalHeight;
             }
         }
 
-        // Check if the object is fully out of the canvas by more than `n` pixels
-        if (
-            wordSprite.position.x + wordSprite.width / 2 < -n || // Out on the left
-            wordSprite.position.x - wordSprite.width / 2 > width + n || // Out on the right
-            wordSprite.position.y + wordSprite.height / 2 < -n || // Out on the top
-            wordSprite.position.y - wordSprite.height / 2 > height + n // Out on the bottom
-        ) {
-            removeWordById(wordSprite.wordId); // Use your existing remove function
+        // Ensure the word stays within the canvas bounds
+        wordSprite.position.x = constrain(wordSprite.position.x, wordSprite.width / 2, width - wordSprite.width / 2);
+        wordSprite.position.y = constrain(wordSprite.position.y, wordSprite.height / 2, height - wordSprite.height / 2);
+    });
+
+    // Collision handling to maintain minimum distance between sprites
+    wordSprites.collide(wordSprites, (a, b) => {
+        let overlapX = max(0, min(a.position.x + a.width / 2, b.position.x + b.width / 2) - max(a.position.x - a.width / 2, b.position.x - b.width / 2));
+        let overlapY = max(0, min(a.position.y + a.height / 2, b.position.y + b.height / 2) - max(a.position.y - a.height / 2, b.position.y - b.height / 2));
+
+        if (overlapX > 0 && overlapY > 0) {
+            let forceX = overlapX * 0.2;
+            let forceY = overlapY * 0.2;
+
+            a.position.x += forceX * 0.5;
+            a.position.y += forceY * 0.5;
+            b.position.x -= forceX * 0.5;
+            b.position.y -= forceY * 0.5;
+
+            // Apply a stronger damping effect to prevent jitter and oscillation
+            a.velocity.x *= dampingFactor;
+            a.velocity.y *= dampingFactor;
+            b.velocity.x *= dampingFactor;
+            b.velocity.y *= dampingFactor;
         }
+    });
+
+    // If no sprites are moving significantly, deactivate gravity and stop all sprites
+    if (!anySpriteMoving && gravityActive) {
+        gravityActive = false;
+        wordSprites.forEach(wordSprite => {
+            wordSprite.velocity.x = 0;
+            wordSprite.velocity.y = 0;
+        });
+    }
+
+    // Reactivate gravity if a new sprite is spawned
+    if (newSpriteSpawned) {
+        gravityActive = true;
+        newSpriteSpawned = false; // Reset the flag after reactivating gravity
+    }
+}
+function draw() {
+    collisionForce = collisionForceSlider.value();
+    dragForce = dragForceSlider.value();
+    showBoundingBoxes = showBoundingBoxesCheckbox.checked();
+
+    const margin = 20; // Define a uniform margin in pixels
+    const dampingFactor = 0.4; // Damping factor to reduce oscillation after collisions
+    let anySpriteMoving = false;
+
+    wordSprites.forEach(wordSprite => {
+        let spriteVelocity = sqrt(wordSprite.velocity.x * wordSprite.velocity.x + wordSprite.velocity.y * wordSprite.velocity.y);
+
+        if (spriteVelocity > velocityThreshold) {
+            anySpriteMoving = true;
+            gravityActive = true; 
+        }
+
+        if (gravityActive) {
+            let centerX = width / 2;
+            let centerY = height / 2;
+            let directionX = centerX - wordSprite.position.x;
+            let directionY = centerY - wordSprite.position.y;
+            let distanceToCenter = sqrt(directionX * directionX + directionY * directionY);
+
+            directionX /= distanceToCenter;
+            directionY /= distanceToCenter;
+
+            wordSprites.forEach(otherSprite => {
+                if (otherSprite !== wordSprite) {
+                    let dx = otherSprite.position.x - wordSprite.position.x;
+                    let dy = otherSprite.position.y - wordSprite.position.y;
+                    let distanceToOther = sqrt(dx * dx + dy * dy);
+
+                    if (distanceToOther < margin) {
+                        directionX *= 0.1;
+                        directionY *= 0.1;
+                    }
+                }
+            });
+
+            let gravityForce = 0.02 * distanceToCenter;
+            wordSprite.velocity.x += directionX * gravityForce;
+            wordSprite.velocity.y += directionY * gravityForce;
+
+            wordSprite.velocity.x *= dragForce;
+            wordSprite.velocity.y *= dragForce;
+        }
+
+        wordSprite.position.x += wordSprite.velocity.x;
+        wordSprite.position.y += wordSprite.velocity.y;
+        wordSprite.wordDiv.position(wordSprite.position.x - wordSprite.width / 2, wordSprite.position.y - wordSprite.height / 2);
+
+        if (wordSprite.easing) {
+            let duration = 1000;
+            let time = millis() - wordSprite.easingStart;
+            if (time < duration) {
+                let progress = time / duration;
+                progress = easeOutQuad(progress);
+                wordSprite.scale = progress * wordSprite.originalScale;
+                wordSprite.wordDiv.style('transform', `scale(${wordSprite.scale})`);
+                wordSprite.width = wordSprite.originalWidth * wordSprite.scale;
+                wordSprite.height = wordSprite.originalHeight * wordSprite.scale;
+            } else {
+                wordSprite.scale = wordSprite.originalScale;
+                wordSprite.easing = false;
+                wordSprite.wordDiv.style('transform', `scale(${wordSprite.scale})`);
+                wordSprite.width = wordSprite.originalWidth;
+                wordSprite.height = wordSprite.originalHeight;
+            }
+        }
+
+        wordSprite.position.x = constrain(wordSprite.position.x, wordSprite.width / 2, width - wordSprite.width / 2);
+        wordSprite.position.y = constrain(wordSprite.position.y, wordSprite.height / 2, height - wordSprite.height / 2);
     });
 
     wordSprites.collide(wordSprites, (a, b) => {
-        let dx = a.position.x - b.position.x;
-        let dy = a.position.y - b.position.y;
-        let distance = sqrt(dx * dx + dy * dy);
-        let minDistance = max(a.width, b.width);
+        let overlapX = max(0, min(a.position.x + a.width / 2, b.position.x + b.width / 2) - max(a.position.x - a.width / 2, b.position.x - b.width / 2));
+        let overlapY = max(0, min(a.position.y + a.height / 2, b.position.y + b.height / 2) - max(a.position.y - a.height / 2, b.position.y - b.height / 2));
 
-        if (distance < minDistance) {
-            let force = collisionForce * (minDistance - distance) / minDistance;
-            let forceX = dx / distance * force;
-            let forceY = dy / distance * force;
-            a.velocity.x += forceX;
-            a.velocity.y += forceY;
-            b.velocity.x -= forceX;
-            b.velocity.y -= forceY;
+        if (overlapX > 0 && overlapY > 0) {
+            let forceX = overlapX * 0.2;
+            let forceY = overlapY * 0.2;
+
+            a.position.x += forceX * 0.5;
+            a.position.y += forceY * 0.5;
+            b.position.x -= forceX * 0.5;
+            b.position.y -= forceY * 0.5;
+
+            a.velocity.x *= dampingFactor;
+            a.velocity.y *= dampingFactor;
+            b.velocity.x *= dampingFactor;
+            b.velocity.y *= dampingFactor;
         }
     });
+
+    if (!anySpriteMoving && gravityActive) {
+        gravityActive = false;
+        wordSprites.forEach(wordSprite => {
+            wordSprite.velocity.x = 0;
+            wordSprite.velocity.y = 0;
+        });
+    }
+
+    if (newSpriteSpawned) {
+        gravityActive = true;
+        newSpriteSpawned = false;
+    }
 }
+
+
+function createWordObject(word) {
+    let size = random(16, 48);
+    let margin = 20; // Define a uniform margin in pixels
+
+    let wordSprite = createSprite(width / 2 + random(-50, 50), height / 2 + random(-50, 50));
+    let wordDiv = createDiv(word.string);
+    wordDiv.parent('wordContainer'); // Add the div inside the canvas
+    wordDiv.position(wordSprite.position.x, wordSprite.position.y);
+    wordDiv.style('font-size', `${size}px`);
+    wordDiv.style('position', 'absolute');
+    wordDiv.style('white-space', 'nowrap');
+    wordDiv.style('transform', 'scale(0.01)'); // Start with a small scale
+
+    wordSprite.velocity.x = 0;
+    wordSprite.velocity.y = 0;
+
+    currentZIndex--;
+    wordDiv.style('z-index', currentZIndex);
+
+    const randomClass = generateRandomCSS();
+    wordDiv.class(randomClass);
+
+    wordDiv.size(AUTO, AUTO);
+    let textWidthValue = wordDiv.elt.offsetWidth;
+    let textHeightValue = wordDiv.elt.offsetHeight;
+
+    wordSprite.originalWidth = textWidthValue + margin;
+    wordSprite.originalHeight = textHeightValue + margin;
+    wordSprite.width = (textWidthValue + margin) * 0.01;
+    wordSprite.height = (textHeightValue + margin) * 0.01;
+
+    wordSprite.originalScale = 1;
+    wordSprite.scale = 0.01;
+
+    wordSprite.easing = true;
+    wordSprite.easingStart = millis();
+
+    wordSprite.wordDiv = wordDiv;
+    wordSprite.wordId = word.id;
+    wordSprites.add(wordSprite);
+
+    wordsMap.set(word.id, { id: word.id, string: word.string, sprite: wordSprite });
+
+    // Set the flag to reactivate gravity when a new sprite is spawned
+    newSpriteSpawned = true;
+}
+
 
 function fetchWords() {
     fetch(`http://{{ ip_address }}:5000/strings?page=${page}&per_page=${perPage}`)
