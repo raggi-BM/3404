@@ -126,6 +126,18 @@ function generateRandomCSS() {
     // Randomly select a font color from both light and dark colors
     const fontColor = allFontColors[Math.floor(Math.random() * allFontColors.length)];
 
+    // Determine if this div should have a pill shape based on a percentage chance
+    const pillShapeChance = 0.5; // 50% chance to apply the pill shape (adjust this value as needed)
+    const applyPillShape = Math.random() < pillShapeChance;
+
+    // Calculate border-radius if pill shape is applied
+    let borderRadius = '3px'; // Default border-radius
+    if (applyPillShape) {
+        const verticalPadding = parseInt(padding);
+        const fontSize = parseInt(size);
+        borderRadius = (fontSize + 2 * verticalPadding) / 2 + 'px';
+    }
+
     // Generate a unique class name
     const className = `word-class-${Math.floor(Math.random() * 10000)}`;
 
@@ -138,11 +150,10 @@ function generateRandomCSS() {
             color: ${fontColor};
             text-decoration: ${textDecoration};
             padding: ${padding};
-            border-radius: 3px;
+            border-radius: ${borderRadius};
             display: inline-block;
             text-align: ${textAlign};
             white-space: ${whiteSpace};
-            
         }
     `;
 
@@ -154,6 +165,7 @@ function generateRandomCSS() {
 
     return className;
 }
+
 
 function draw() {
     // background(255);

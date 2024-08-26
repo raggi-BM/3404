@@ -5,9 +5,9 @@ import json
 OLLAMA_URL = "http://localhost:11434/api/chat"
 
 # Define the model you want to use
-# MODEL_NAME = "llama3.1"
+# Default MODEL_NAME = "vanilj/hermes-3-llama-3.1-8b:latest"
 
-def check_content_appropriateness(user_prompt, MODEL_NAME="llama3.1"):
+def check_content_appropriateness(user_prompt, MODEL_NAME="vanilj/hermes-3-llama-3.1-8b:latest"):
     """
     Sends a user prompt to the LLM for content moderation and returns True if the content is approved,
     False otherwise.

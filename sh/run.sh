@@ -83,8 +83,6 @@ while IFS= read -r package || [ -n "$package" ]; do
     fi
 done < requirements.txt
 
-ollama serve &
-
 # Step 11: Run the app
 clear
 echo "Running the app..."

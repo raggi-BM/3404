@@ -1,17 +1,14 @@
 import sys
 import os
-
-# Add the parent directory of the current file (test.py) to the system path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
-
-from moderation import check_content_appropriateness
-
 import csv
 import json
 import time
 from tqdm import tqdm
 import random
 
+# Add the parent directory to the system path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
+from moderation import check_content_appropriateness  # Ensure this import works as discussed before
 
 # ASCII art header
 header = r"""
@@ -23,33 +20,18 @@ header = r"""
 | $$  \ $$| $$      | $$  | $$| $$    $$| $$\  $$ | $$\  $ | $$| $$  | $$   | $$   | $$  | $$
 | $$$$$$$/| $$$$$$$$| $$  | $$|  $$$$$$/| $$ \  $$| $$ \/  | $$| $$  | $$   | $$   | $$  | $$
 |_______/ |________/|__/  |__/ \______/ |__/  \__/|__/     |__/|__/  |__/   |__/   |__/  |__/
-                                                                                             
-                                                                                             
-                                                                                             
 """
 print(header)
 
 # List of LLMs to test
 llms = [
-    "vanilj/hermes-3-llama-3.1-8b:latest",
-    "llama3.1:8b-instruct-fp16",
-    "llama3.1:8b-instruct-q4_0",
-    "llama3.1:latest",
-    "phi3.5:3.8b-mini-instruct-q2_K",
-    "deepseek-coder-v2:16b",
-    "llama3:instruct",
-    "dolphin-llama3:latest",
-    "phi3:latest",
-    "llama3:latest",
-    "deepseek-coder:6.7b",
-    "llama2-uncensored:latest",
-    "llama2:latest"
+    "vanilj/hermes-3-llama-3.1-8b:latest"
 ]
 
 # Initialize storage for the report
 results_summary = []
 
-# open the CSV file, random sort the rows after the header and save it back
+# Randomly shuffle the rows in the CSV file
 with open('testdata.csv', mode='r') as file:
     csv_reader = csv.reader(file)
     header = next(csv_reader)
@@ -67,6 +49,8 @@ for llm in llms:
     false_positives = 0
     false_negatives = 0
     results = []
+
+    start_time = time.time()  # Start time for this LLM
     
     with open('testdata.csv', mode='r') as file:
         csv_reader = csv.DictReader(file)
@@ -118,6 +102,9 @@ for llm in llms:
                 pbar.update(1)
                 time.sleep(0.1)
 
+    end_time = time.time()  # End time for this LLM
+    elapsed_time = end_time - start_time  # Time taken in seconds
+
     # Calculate percentages and accuracy
     false_positive_rate = (false_positives / total) * 100 if total > 0 else 0.0
     false_negative_rate = (false_negatives / total) * 100 if total > 0 else 0.0
@@ -127,22 +114,30 @@ for llm in llms:
     # Save the summary for this LLM
     results_summary.append({
         "LLM Name": llm,
+        "Total Tests": total,
         "False Positives": false_positives,
         "False Negatives": false_negatives,
         "False Positive %": false_positive_rate,
         "False Negative %": false_negative_rate,
-        "Total Accuracy %": total_accuracy
+        "Total Accuracy %": total_accuracy,
+        "Time Taken (s)": elapsed_time
     })
 
     print(f"LLM {llm} Results:")
     print(f"Total Tests: {total}")
     print(f"False Positives: {false_positives} ({false_positive_rate:.2f}%)")
     print(f"False Negatives: {false_negatives} ({false_negative_rate:.2f}%)")
-    print(f"Total Accuracy: {total_accuracy:.2f}%\n")
+    print(f"Total Accuracy: {total_accuracy:.2f}%")
+    print(f"Time Taken: {elapsed_time:.2f} seconds\n")
 
 # Write the results summary to a CSV file
 with open('llm_results_summary.csv', mode='w', newline='') as file:
-    fieldnames = ["LLM Name", "False Positives", "False Negatives", "False Positive %", "False Negative %", "Total Accuracy %"]
+    fieldnames = [
+        "LLM Name", "Total Tests", "False Positives", 
+        "False Negatives", "False Positive %", 
+        "False Negative %", "Total Accuracy %", 
+        "Time Taken (s)"
+    ]
     writer = csv.DictWriter(file, fieldnames=fieldnames)
 
     writer.writeheader()
