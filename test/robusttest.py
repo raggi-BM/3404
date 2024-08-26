@@ -25,8 +25,26 @@ print(header)
 
 # List of LLMs to test
 llms = [
-    "vanilj/hermes-3-llama-3.1-8b:latest"
+    "vanilj/hermes-3-llama-3.1-8b:latest", "qwen:latest", "mistral:7b", "phi3.5:latest", "llama3-groq-tool-use"
 ]
+
+def test_model_availability(model_name):
+    """Test if a model is available and can process a basic input."""
+    try:
+        # Test with a simple sentence
+        test_sentence = "This is a test sentence."
+        result = check_content_appropriateness(test_sentence, MODEL_NAME=model_name)
+        return True
+    except Exception as e:
+        print(f"Model {model_name} failed to respond: {e}")
+        return False
+
+# Filter out models that are not available
+available_llms = [llm for llm in llms if test_model_availability(llm)]
+
+if not available_llms:
+    print("No available LLMs found. Exiting.")
+    sys.exit(1)
 
 # Initialize storage for the report
 results_summary = []
@@ -43,8 +61,8 @@ with open('testdata.csv', mode='r') as file:
         csv_writer.writerow(header)
         csv_writer.writerows(rows)
 
-# Iterate over each LLM model
-for llm in llms:
+# Iterate over each available LLM model
+for llm in available_llms:
     total = 0
     false_positives = 0
     false_negatives = 0
