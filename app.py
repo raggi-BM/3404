@@ -5,10 +5,30 @@ import socket
 import logging
 from flask_socketio import SocketIO, emit
 from moderation import check_content_appropriateness
+import qrcode
+from colorama import init, Fore, Back, Style
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app, resources={r"/*": {"origins": "*", "supports_credentials": True}})
+init()
+
+
+def qr_to_terminal(data):
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=1,
+        border=4,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+
+    qr_code = qr.get_matrix()
+
+    for row in qr_code:
+        line = ''.join([Back.BLACK + '  ' if cell else Back.WHITE + '  ' for cell in row])
+        print(line + Style.RESET_ALL)
 
 # Function to get the computer's local IP address
 def get_local_ip():
@@ -203,4 +223,7 @@ if __name__ == '__main__':
     print(f"Input frontend: http://{local_ip}:5000/input")
     print(f"Moderator frontend: http://{local_ip}:5000/moderator")
     print("################################")
+    print("QR Code Moderator Frontend:")
+    print("################################")
+    qr_to_terminal(f"http://{local_ip}:5000/moderator")
     socketio.run(app, debug=False, host='0.0.0.0')
