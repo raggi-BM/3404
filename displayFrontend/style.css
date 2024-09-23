@@ -3,6 +3,7 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden; /* Hides both vertical and horizontal scrollbars */
+    background-color: #000000; /* Set the background color to black */
 }
 
 /* Remove any border, padding, and scrollbars from the canvas */

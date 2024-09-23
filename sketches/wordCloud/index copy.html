@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Cloud with Animation</title>
+    <script src="./wordcloud2.js"></script>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #wordCloudCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #fullScreenCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            background-color: #502d4d;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="fullScreenCanvas"></canvas> <!-- Full-screen canvas for animation -->
+    <canvas id="wordCloudCanvas"></canvas> <!-- Visible canvas for word cloud -->
+
+    <script>
+        var hiddenCanvas = document.getElementById('wordCloudCanvas');
+        var fullScreenCanvas = document.getElementById('fullScreenCanvas');
+        var ctx = fullScreenCanvas.getContext('2d');
+
+        function resizeCanvas() {
+            fullScreenCanvas.width = window.innerWidth;
+            fullScreenCanvas.height = window.innerHeight;
+            hiddenCanvas.width = window.innerWidth;
+            hiddenCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        var words = [
+            ['Freedom', 12, '#8c4667'],
+            ['Equality', 1, '#d9b8c4'],
+            ['Justice', 14, '#c19da7'],
+            ['Liberty', 16, '#624e69'],
+            ['Fairness', 10, '#3e1d34'],
+            ['Participation', 20, '#8c4667'],
+            ['Representation', 22, '#d9b8c4'],
+            ['Accountability', 15, '#c19da7'],
+            ['Rights', 8, '#624e69'],
+            ['Voice', 9, '#3e1d34'],
+            ['Transparency', 19, '#8c4667'],
+            ['Empowerment', 17, '#d9b8c4'],
+            ['Inclusion', 13, '#c19da7'],
+            ['Unity', 11, '#624e69'],
+            ['Progress', 12, '#3e1d34'],
+            ['Collaboration', 7, '#8c4667'],
+            ['Diversity', 6, '#d9b8c4'],
+            ['Innovation', 18, '#c19da7'],
+            ['Sustainability', 9, '#624e69'],
+            ['Resilience', 10, '#3e1d34'],
+            ['Creativity', 14, '#8c4667'],
+            ['Integrity', 5, '#d9b8c4'],
+            ['Respect', 11, '#c19da7'],
+            ['Compassion', 8, '#624e69'],
+            ['Solidarity', 12, '#3e1d34'],
+            ['Ethics', 6, '#8c4667'],
+            ['Responsibility', 9, '#d9b8c4'],
+            ['Trust', 7, '#c19da7'],
+            ['Hope', 5, '#624e69'],
+            ['Equality', 8, '#3e1d34'],
+            ['Opportunity', 15, '#8c4667'],
+            ['Dignity', 12, '#d9b8c4'],
+            ['Support', 9, '#c19da7'],
+            ['Empathy', 11, '#624e69'],
+            ['Courage', 13, '#3e1d34'],
+            ['Honesty', 6, '#8c4667'],
+            ['Wisdom', 9, '#d9b8c4'],
+            ['Kindness', 14, '#c19da7'],
+            ['Patience', 12, '#624e69'],
+            ['Gratitude', 10, '#3e1d34'],
+            ['Collaboration', 19, '#8c4667'],
+            ['Forgiveness', 9, '#d9b8c4'],
+            ['Generosity', 15, '#c19da7'],
+            ['Civility', 6, '#624e69'],
+            ['Peace', 7, '#3e1d34'],
+            ['Love', 13, '#8c4667'],
+            ['Justice', 18, '#d9b8c4'],
+            ['Fairness', 17, '#c19da7'],
+            ['Balance', 14, '#624e69'],
+            ['Knowledge', 15, '#3e1d34'],
+            ['Curiosity', 8, '#8c4667'],
+            ['Adventure', 10, '#d9b8c4'],
+            ['Balance', 14, '#c19da7'],
+            ['Humility', 7, '#624e69'],
+            ['Perseverance', 16, '#3e1d34'],
+            ['Optimism', 17, '#8c4667'],
+            ['Tolerance', 11, '#d9b8c4'],
+            ['Inclusivity', 18, '#c19da7'],
+            ['Community', 19, '#624e69'],
+            ['Service', 10, '#3e1d34'],
+            ['Wellbeing', 9, '#8c4667'],
+            ['Strength', 16, '#d9b8c4'],
+            ['Mindfulness', 14, '#c19da7'],
+            ['Ambition', 13, '#624e69'],
+            ['Determination', 20, '#3e1d34'],
+            ['Innovation', 18, '#8c4667'],
+            ['Leadership', 15, '#d9b8c4'],
+            ['Vision', 17, '#c19da7'],
+            ['Strategy', 12, '#624e69'],
+            ['Equality', 11, '#3e1d34'],
+            ['Respect', 9, '#8c4667'],
+            ['Wisdom', 8, '#d9b8c4'],
+            ['Compassion', 12, '#c19da7'],
+            ['Integrity', 14, '#624e69'],
+            ['Unity', 9, '#3e1d34'],
+            ['Honesty', 18, '#8c4667'],
+            ['Vision', 14, '#d9b8c4'],
+            ['Perseverance', 16, '#c19da7'],
+            ['Courage', 15, '#624e69'],
+            ['Inspiration', 10, '#3e1d34'],
+            ['Balance', 11, '#8c4667'],
+            ['Passion', 13, '#d9b8c4'],
+            ['Support', 9, '#c19da7'],
+            ['Leadership', 18, '#624e69'],
+            ['Strength', 12, '#3e1d34'],
+            ['Commitment', 14, '#8c4667'],
+            ['Focus', 15, '#d9b8c4'],
+            ['Dedication', 16, '#c19da7'],
+            ['Gratitude', 13, '#624e69'],
+            ['Trust', 10, '#3e1d34'],
+            ['Harmony', 17, '#8c4667'],
+            ['Innovation', 19, '#d9b8c4']
+        ];
+
+
+        function easeInOut(t) {
+            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+        }
+
+        function scalePosition(value, originalSize, targetSize) {
+            return (value / originalSize) * targetSize;
+        }
+
+        function animateWords(wordData) {
+            var startTime = null;
+            var duration = 1200;
+
+            function render(time) {
+                if (!startTime) startTime = time;
+                var progress = (time - startTime) / duration;
+                var easedProgress = easeInOut(progress);
+
+                ctx.clearRect(0, 0, fullScreenCanvas.width, fullScreenCanvas.height);
+
+                wordData.forEach(function (word) {
+                    var startX = fullScreenCanvas.width / 2;
+                    var startY = fullScreenCanvas.height / 2;
+
+                    var targetX = word.x;
+                    var targetY = word.y;
+
+                    var x = startX + (targetX - startX) * easedProgress;
+                    var y = startY + (targetY - startY) * easedProgress;
+
+                    var animatedFontSize = word.size * easedProgress;
+
+                    ctx.save();
+                    ctx.scale(1 / word.mu, 1 / word.mu);
+                    ctx.fillStyle = word.color;  // Use color from word data
+
+                    ctx.translate(x * word.mu, y * word.mu);
+
+                    if (word.rotation !== 0) {
+                        ctx.rotate(-word.rotation);
+                    }
+
+                    ctx.font = animatedFontSize * word.mu + 'px "Trebuchet MS", "Heiti TC", "微軟正黑體", "Arial Unicode MS", "Droid Fallback Sans", sans-serif';
+                    ctx.textBaseline = word.baseline;
+                    ctx.fillText(word.text, word.offsetX * word.mu, (word.offsetY + animatedFontSize * 0.5) * word.mu);
+
+                    ctx.restore();
+                });
+
+                if (progress < 1) {
+                    requestAnimationFrame(render);
+                }
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        WordCloud(hiddenCanvas, {
+            list: words.map(word => [word[0], word[1]]),
+            gridSize: 12,
+            weightFactor: 15,
+            color: 'random-dark',
+            rotateRatio: 0.6,
+            backgroundColor: '#f0f0f0',
+            shrinkToFit: true,
+        });
+
+        setTimeout(function () {
+            var wordCloudData = getWordCloudData();
+            console.log('Captured Word Data:', wordCloudData);
+
+            // Attach color to each word data
+            wordCloudData.forEach((data, index) => {
+                data.color = words[index][2];  // Add color from the words array
+            });
+
+            animateWords(wordCloudData);
+        }, 1000);
+    </script>
+</body>
+
+</html>

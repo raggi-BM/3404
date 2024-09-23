@@ -168,13 +168,9 @@ function generateRandomCSS() {
 
 
 function draw() {
-    // background(255);
-
     collisionForce = collisionForceSlider.value();
     dragForce = dragForceSlider.value();
     showBoundingBoxes = showBoundingBoxesCheckbox.checked();
-
-    const n = 50; // Replace 50 with your desired threshold in pixels
 
     wordSprites.forEach(wordSprite => {
         wordSprite.velocity.x *= dragForce;
@@ -201,15 +197,17 @@ function draw() {
             }
         }
 
-        // Check if the object is fully out of the canvas by more than `n` pixels
-        if (
-            wordSprite.position.x + wordSprite.width / 2 < -n || // Out on the left
-            wordSprite.position.x - wordSprite.width / 2 > width + n || // Out on the right
-            wordSprite.position.y + wordSprite.height / 2 < -n || // Out on the top
-            wordSprite.position.y - wordSprite.height / 2 > height + n // Out on the bottom
-        ) {
-            removeWordById(wordSprite.wordId); // Use your existing remove function
+        // Bounce off borders
+        if (wordSprite.position.x - wordSprite.width / 2 <= 0 || wordSprite.position.x + wordSprite.width / 2 >= width) {
+            wordSprite.velocity.x *= -1; // Reverse x direction
         }
+        if (wordSprite.position.y - wordSprite.height / 2 <= 0 || wordSprite.position.y + wordSprite.height / 2 >= height) {
+            wordSprite.velocity.y *= -1; // Reverse y direction
+        }
+
+        // Ensure the word stays within the canvas bounds after bouncing
+        wordSprite.position.x = constrain(wordSprite.position.x, wordSprite.width / 2, width - wordSprite.width / 2);
+        wordSprite.position.y = constrain(wordSprite.position.y, wordSprite.height / 2, height - wordSprite.height / 2);
     });
 
     wordSprites.collide(wordSprites, (a, b) => {
@@ -229,6 +227,7 @@ function draw() {
         }
     });
 }
+
 
 function fetchWords() {
     fetch(`http://{{ ip_address }}:5000/strings?page=${page}&per_page=${perPage}`)
@@ -281,9 +280,35 @@ function removeWordById(id) {
     }
 }
 
+let wordFrequency = new Map();
+
 function createWordObject(word) {
-    let size = random(16, 48);
     let margin = 20; // Define a uniform margin in pixels
+
+    // Check if the word already exists in wordsMap
+    if (wordsMap.has(word.id)) {
+        let wordObj = wordsMap.get(word.id);
+        let wordDiv = wordObj.sprite.wordDiv;
+
+        // Enable smooth scaling using easing effect for the sprite
+        wordObj.sprite.easing = true;
+        wordObj.sprite.easingStart = millis();
+        wordObj.sprite.originalScale = wordObj.sprite.scale * 1.5; // Increase size by 50%
+
+        // Smooth scaling for the div
+        wordDiv.style('transition', 'transform 1s ease-out');
+        wordDiv.style('transform', `scale(${wordObj.sprite.originalScale})`); // Ensure the div also grows
+
+        return; // Exit the function to avoid rendering the word again
+    }
+
+    // If the word is new, create it as usual
+    let sizeMultiplier = wordFrequency.get(word.string) || 1;
+    let baseSize = 16; // Starting size for a word
+    let size = baseSize * sizeMultiplier;
+
+    // Update frequency of the word
+    wordFrequency.set(word.string, sizeMultiplier + 1);
 
     let wordSprite = createSprite(width / 2 + random(-50, 50), height / 2 + random(-50, 50));
     let wordDiv = createDiv(word.string);
@@ -327,6 +352,9 @@ function createWordObject(word) {
     // Store the word object in the map with its id as the key
     wordsMap.set(word.id, { id: word.id, string: word.string, sprite: wordSprite });
 }
+
+
+
 
 
 

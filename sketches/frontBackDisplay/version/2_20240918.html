@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="./wordcloud2.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Lora:wght@400;700&family=Lobster&display=swap"
+        rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordCloud with Matter.js</title>
+    <link rel="stylesheet" href="./displayStyles.css">
+</head>
+
+<body>
+    <canvas id="matterCanvas"></canvas>
+    <canvas id="wordCloudCanvas"></canvas>
+    <canvas id="fullScreenCanvas"></canvas>
+</body>
+
+</html>
+
+<script>
+    let socket;
+    let wordsMap = new Map(); // Map to track word ID and its corresponding word
+    let wordBodies = {}; // Store Matter.js bodies for each word
+    let wordQueue = [];
+    let wordIds = new Set(); // Track ids of words currently stored
+    let page = 1;
+    let perPage = 50;
+    let allWordsFetched = false;
+
+    var hiddenCanvas = document.getElementById('wordCloudCanvas');
+    var fullScreenCanvas = document.getElementById('fullScreenCanvas');
+    var matterCanvas = document.getElementById('matterCanvas');
+    var ctx = fullScreenCanvas.getContext('2d');
+
+    const rotation = false; // Set to true if rotation should be enabled
+
+
+    // Matter.js setup
+    const { Engine, Render, Runner, World, Bodies, Body, Events } = Matter;
+    let engine = Engine.create();
+    let world = engine.world;
+    world.gravity.y = 0; // Disable gravity
+
+    // Runner ensures that the engine keeps updating
+    let runner = Runner.create();
+    Runner.run(runner, engine);
+
+    // Matter.js rendering enabled (for debugging purposes)
+    let render = Render.create({
+        canvas: matterCanvas,
+        engine: engine,
+        options: {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            wireframes: false, // Enable wireframes for debugging
+            background: 'transparent'
+        }
+    });
+
+    // Render.run(render);
+
+    // Attach Matter.js events to trigger drawWords after each update
+    Events.on(engine, 'afterUpdate', function () {
+        drawWords(); // Custom word drawing will happen after each update
+    });
+
+    function resizeCanvasToFullScreen() {
+        fullScreenCanvas.width = window.innerWidth;
+        fullScreenCanvas.height = window.innerHeight;
+        hiddenCanvas.width = window.innerWidth;
+        hiddenCanvas.height = window.innerHeight;
+        matterCanvas.width = window.innerWidth;
+        matterCanvas.height = window.innerHeight;
+    }
+
+    function getRandomItem(array) {
+        return array[Math.floor(Math.random() * array.length)];
+    }
+
+    function mapWordsToArray() {
+        return Array.from(wordsMap.values()).map(word => [word.string, word.count, word.fontFamily, word.id]);
+    }
+
+    // Initialize WordCloud with a Proxy for completion status
+    var proStatus = new Proxy({ done: false }, {
+        set: function (target, prop, value) {
+            if (prop === 'done' && value === true) {
+                console.log('Word cloud generation is done!');
+                onWordCloudComplete();
+            }
+            target[prop] = value; // Store the new value
+            return true;
+        }
+    });
+
+    function onWordCloudComplete() {
+        var wordCloudData = getWordCloudData();
+
+        wordCloudData.forEach((data) => {
+            const fontSize = data.size;
+            const mass = fontSize / 10;
+
+            const targetX = data.x;
+            const targetY = data.y;
+
+            const spawnX = targetX + (Math.random() * 200 - 100);
+            const spawnY = targetY + (Math.random() * 200 - 100);
+
+            const bodyPadding = 10;
+
+            const bodyWidth = data.info.fillTextWidth + bodyPadding * 2; // Add padding to width
+            const bodyHeight = data.info.fillTextHeight + bodyPadding * 2; // Add padding to height
+
+
+            // Create the physics body
+            const body = Bodies.rectangle(spawnX, spawnY, bodyWidth, bodyHeight, {
+                mass,
+                frictionAir: 0.1,
+                inertia: rotation ? Infinity : 0 // Prevent rotation if rotation is false
+            });
+
+            // Prevent rotation if needed
+            if (!rotation) {
+                Body.setAngle(body, 0); // Reset any rotation
+                Body.setAngularVelocity(body, 0); // Prevent angular velocity
+            }
+
+            // Add the body to the world
+            World.add(world, body);
+
+            // Set up the word data with visual properties
+            const wordText = data.text || 'Missing Text';
+            const backgroundColor = getRandomItem(['#ab5e8a', '#a14330', '#ddb73f', '#a44830', '#7e6792']);
+            const fontColor = getRandomItem(['#502d4d', '#3B1E2E', '#fefbe8', '#fefae7']);
+            const fontFamily = data.fontFamily || 'Arial';
+
+            wordBodies[data.wordId] = {
+                body,
+                data: {
+                    size: fontSize,
+                    string: wordText,
+                    style: {
+                        backgroundColor: backgroundColor,
+                        color: fontColor,
+                        fontFamily: fontFamily,
+                        fontSize: fontSize
+                    },
+                    info: {
+                        fillTextWidth: data.info.fillTextWidth,
+                        fillTextHeight: data.info.fillTextHeight
+                    }
+                },
+                target: { x: targetX, y: targetY }
+            };
+        });
+    }
+
+
+    function createWordObject(word) {
+        // Add word to the wordsMap
+        const fontFamily = getRandomItem(['Merriweather', 'Oswald', 'Playfair Display', 'Lora', 'Lobster']);
+        wordsMap.set(word.id, {
+            id: word.id,
+            string: word.string,
+            count: word.count,
+            fontFamily
+        });
+
+        // Update the word cloud
+        updateWordCloud();
+    }
+
+    // Update function to seek the target
+    function updateWordBodies() {
+        Object.values(wordBodies).forEach(({ body, target }) => {
+            const toTargetX = target.x - body.position.x;
+            const toTargetY = target.y - body.position.y;
+
+            const forceMagnitude = 0.0001; // Force magnitude can be tuned
+
+            // Apply force towards the target
+            Body.applyForce(body, body.position, {
+                x: toTargetX * forceMagnitude,
+                y: toTargetY * forceMagnitude
+            });
+
+            // Prevent any rotation
+            if (!rotation) {
+                Body.setAngle(body, 0); // Reset rotation angle
+                Body.setAngularVelocity(body, 0); // Prevent any angular velocity
+            }
+        });
+    }
+
+
+    // Matter.js engine update loop
+    function gameLoop() {
+        Engine.update(engine);
+        updateWordBodies(); // Apply forces to move words toward their targets
+        requestAnimationFrame(gameLoop); // Keep the loop going
+    }
+
+    gameLoop(); // Start the game loop
+
+    function drawWords() {
+        ctx.clearRect(0, 0, fullScreenCanvas.width, fullScreenCanvas.height); // Clear the canvas
+
+        Object.keys(wordBodies).forEach(id => {
+            const { body, data } = wordBodies[id];
+            const { position: { x: bodyX, y: bodyY }, angle } = body;
+            const { string, size, style, info } = data;
+
+            if (!string || !style || !info) {
+                return;
+            }
+
+            // Measure text width and height
+            const textWidth = info.fillTextWidth || ctx.measureText(string).width;
+            const textHeight = info.fillTextHeight || size;
+
+            // Save the context
+            ctx.save();
+
+            // Apply scaling, translation, and rotation
+            ctx.translate(bodyX, bodyY);
+            if (rotation && angle !== 0) {
+                ctx.rotate(angle); // Apply rotation only if rotation is true
+            }
+            // Draw background rectangle
+            ctx.fillStyle = style.backgroundColor;
+            ctx.fillRect(-textWidth / 2, -textHeight / 2, textWidth, textHeight);
+
+            // Draw text
+            ctx.fillStyle = style.color;
+            ctx.font = `${size}px ${style.fontFamily}`;
+            ctx.textBaseline = 'middle';
+            ctx.fillText(string, -textWidth / 2, 0);
+
+            // Restore context
+            ctx.restore();
+        });
+    }
+
+    function updateWordCloud() {
+        const wordList = mapWordsToArray();
+
+        WordCloud(document.getElementById('wordCloudCanvas'), {
+            list: wordList,
+            gridSize: 20,
+            weightFactor: 50,
+            color: 'random-dark',
+            rotateRatio: 0,
+            backgroundColor: '#f0f0f0',
+            shrinkToFit: true,
+            drawOutOfBound: false,
+            done: function () {
+                proStatus.done = true; // Trigger proxy when done
+            }
+        });
+    }
+
+    function setup() {
+        // Establish socket connection
+        socket = io.connect(`http://10.16.27.17:5000`);
+
+        // Initial fetch to populate the stored words
+        fetchWords();
+
+        socket.on('new_word', function (word) {
+            console.log('New word:', word);
+            if (wordsMap.has(word.id)) {
+                // If word exists, update count and physics
+                let wordObj = wordsMap.get(word.id);
+                wordObj.count = word.count;
+                updateWordPhysics(word.id); // Update position/mass/etc.
+            } else {
+                wordQueue.push(word);
+                wordIds.add(word.id);
+                createWordObject(word);
+            }
+        });
+
+        socket.on('remove_word', function (data) {
+            console.log('Removing word:', data);
+            removeWordById(data.id);
+        });
+    }
+
+    // Fetch words from the backend
+    function fetchWords() {
+        fetch(`http://10.16.27.17:5000/strings?page=${page}&per_page=${perPage}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Fetched data:", data);
+                data.data.forEach(word => {
+                    if (!wordIds.has(word.id)) {
+                        createWordObject(word);
+                        wordQueue.push(word);
+                        wordIds.add(word.id);
+                    }
+                });
+                if (data.data.length === perPage) {
+                    page++;
+                    fetchWords(); // Fetch more if there’s more data
+                } else {
+                    allWordsFetched = true;
+                }
+            })
+            .catch(error => console.error('Error fetching words:', error));
+    }
+
+    // Resize the canvas on window resize
+    window.onresize = function () {
+        resizeCanvasToFullScreen();
+    };
+
+    // Initialize setup and resize on load
+    window.onload = function () {
+        resizeCanvasToFullScreen();
+        setup();
+    };
+
+</script>

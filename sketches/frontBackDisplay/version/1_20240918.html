@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Include Matter.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="./wordcloud2.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Lora:wght@400;700&family=Lobster&display=swap"
+        rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MFABoston Display</title>
+    <!-- get the style from displayStyles.css -->
+    <link rel="stylesheet" href="./displayStyles.css">
+</head>
+
+<body>
+    <canvas id="wordCloudCanvas"></canvas>
+    <canvas id="fullScreenCanvas"></canvas> <!-- Full-screen canvas for animation -->
+</body>
+
+
+</html>
+
+<script>
+    let socket;
+    let wordsMap = new Map(); // Map to track word ID and its corresponding word
+    let wordQueue = [];
+    let wordIds = new Set(); // Track ids of words currently stored
+    let page = 1;
+    let perPage = 50;
+    let allWordsFetched = false;
+
+    var hiddenCanvas = document.getElementById('wordCloudCanvas');
+    var fullScreenCanvas = document.getElementById('fullScreenCanvas');
+    var ctx = fullScreenCanvas.getContext('2d');
+
+    function getRandomItem(array) {
+        return array[Math.floor(Math.random() * array.length)];
+    }
+
+    // hide the mouse if inactive for 2 seconds
+    var timeout;
+    document.onmousemove = function () {
+        clearTimeout(timeout);
+        document.body.style.cursor = 'default';
+        timeout = setTimeout(function () {
+            document.body.style.cursor = 'none';
+        }, 2000);
+    };
+
+    // Function to resize the canvas to fit the full screen
+    function resizeCanvasToFullScreen() {
+        fullScreenCanvas.width = window.innerWidth;
+        fullScreenCanvas.height = window.innerHeight;
+        hiddenCanvas.width = window.innerWidth;
+        hiddenCanvas.height = window.innerHeight;
+
+    }
+
+    function mapWordsToArray() {
+        return Array.from(wordsMap.values()).map(word => [word.string, word.count, word.fontFamily, word.id]);
+    }
+
+    // Initialize the WordCloud with proxy support
+    var proStatus = new Proxy({ done: false }, {
+        set: function (target, prop, value) {
+            if (prop === 'done' && value === true) {
+                console.log('Word cloud generation is done!');
+                onWordCloudComplete();
+            }
+            target[prop] = false; // Store the new value
+            return true;
+        }
+    });
+
+    function onWordCloudComplete() {
+        var wordCloudData = getWordCloudData();
+
+        // Update the word cloud with the new styles
+        wordCloudData.forEach((data, index) => {
+            const backgroundColor = getRandomItem(['#ab5e8a', '#a14330', '#ddb73f', '#a44830', '#7e6792']);
+            const fontColor = getRandomItem(['#502d4d', '#3B1E2E', '#fefbe8', '#fefae7']);
+            const textDecoration = getRandomItem(['none', 'underline', 'circle']);
+            data.style = {
+                backgroundColor: backgroundColor,
+                color: fontColor,
+                fontFamily: data.fontFamily,
+                textDecoration: textDecoration
+            };
+        });
+        console.log('Word cloud data:', wordCloudData);
+        animateWords(wordCloudData);
+
+    }
+
+    function easeInOut(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    }
+
+
+    function animateWords(wordData) {
+        var startTime = null;
+
+        // Randomize the animation duration and delay for each word
+        wordData.forEach(function (word) {
+            word.delay = Math.random() * 500;  // Random delay between 0 and 500 ms
+            word.duration = 800 + Math.random() * 600;  // Random duration between 800 and 1400 ms
+            word.padding = 10;  // Base padding for background
+
+            // Cache expensive calculations outside of the animation loop
+            word.textMetrics = ctx.measureText(word.text);
+            word.textWidth = word.textMetrics.width;
+            word.rectWidth = word.info.fillTextWidth;
+            word.rectHeight = word.info.fillTextHeight;
+        });
+
+        // Sort words by font size once before the animation loop
+        wordData.sort((a, b) => b.info.fontSize - a.info.fontSize);
+
+        let lastRender = 0;
+
+        function render(time) {
+            if (!startTime) startTime = time;
+
+            // Throttle frame rendering to ~60fps
+            if (time - lastRender < 16) {
+                requestAnimationFrame(render);
+                return;
+            }
+            lastRender = time;
+
+            ctx.clearRect(0, 0, fullScreenCanvas.width, fullScreenCanvas.height);
+
+            wordData.forEach(function (word) {
+                var elapsedTime = time - startTime - word.delay;
+                if (elapsedTime > 0) {
+                    var progress = elapsedTime / word.duration;
+                    var easedProgress = easeInOut(Math.min(progress, 1));
+
+                    // Precompute values
+                    var startX = fullScreenCanvas.width / 2 - word.offsetX;
+                    var startY = fullScreenCanvas.height / 2 - word.offsetY;
+                    var targetX = word.x;
+                    var targetY = word.y;
+                    var x = startX + (targetX - startX) * easedProgress;
+                    var y = startY + (targetY - startY) * easedProgress;
+
+                    var animatedFontSize = word.size * easedProgress;
+                    var muEased = word.mu * easedProgress;
+                    var padding = word.padding * easedProgress;
+
+                    // Start drawing
+                    ctx.save();
+
+                    // Scale and position the word
+                    ctx.scale(1 / word.mu, 1 / word.mu);
+                    ctx.translate(x * word.mu, y * word.mu);
+                    if (word.rotation !== 0) {
+                        ctx.rotate(-word.rotation);
+                    }
+
+                    // Draw the background rectangle with drop shadow
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)'; // Color and opacity of the shadow
+                    ctx.shadowBlur = 10; // Blurriness of the shadow
+                    ctx.shadowOffsetX = 5; // Horizontal offset of the shadow
+                    ctx.shadowOffsetY = 5; // Vertical offset of the shadow
+
+                    ctx.fillStyle = word.style.backgroundColor;
+                    ctx.fillRect(
+                        word.offsetX - padding * word.mu,
+                        word.offsetY - padding * word.mu,
+                        word.rectWidth * easedProgress + padding * 2 * word.mu,
+                        word.rectHeight * easedProgress + padding * 2 * word.mu
+                    );
+
+                    // Reset shadow for the text
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+
+                    // Draw the text
+                    ctx.fillStyle = word.style.color;
+                    ctx.font = animatedFontSize * word.mu + 'px ' + word.fontFamily;
+                    ctx.textBaseline = word.baseline;
+                    ctx.fillText(word.text, word.offsetX * word.mu, (word.offsetY + animatedFontSize * 0.5) * word.mu);
+
+                    ctx.restore();
+                }
+            });
+
+            // Continue the animation until the longest word's animation finishes
+            if (time - startTime < Math.max(...wordData.map(word => word.delay + word.duration))) {
+                requestAnimationFrame(render);
+            }
+        }
+
+        requestAnimationFrame(render);
+    }
+
+
+
+
+    function updateWordCloud() {
+        const wordList = mapWordsToArray(); // Map wordsMap to the desired format [['string', count], ...]
+        WordCloud(document.getElementById('wordCloudCanvas'),
+            {
+                list: wordList,
+                drawGridLines: true,
+                movecenter: true,
+                drawCenter: true,
+                border: 2,
+                gridSize: 20,
+                weightFactor: 50,
+                color: 'random-dark',
+                rotateRatio: 0,
+                backgroundColor: '#f0f0f0',
+                shrinkToFit: true,
+                // drawMask: true,
+                drawOutOfBound: false,
+                done: function () {
+                    proStatus.done = true; // Trigger the proxy when done
+                }
+
+            });
+    }
+
+
+    function setup() {
+        socket = io.connect(`http://10.16.27.17:5000`);
+
+        // Initial fetch to populate the stored words
+        fetchWords();
+
+        // Real-time WebSocket events
+        socket.on('new_word', function (word) {
+            console.log('New word:', word);
+
+            if (wordsMap.has(word.id)) {
+                // If the word already exists, update its count
+                let wordObj = wordsMap.get(word.id);
+                wordObj.count = word.count; // Update the count
+                console.log(`Updated word with id ${word.id}: new count is ${word.count}`);
+
+                updateWordCloud(); // Update the word cloud
+            } else {
+                // If the word is new, store it and add it to the queue
+                wordQueue.push(word);
+                wordIds.add(word.id);
+                createWordObject(word); // Store the new word with the count
+            }
+        });
+
+
+        socket.on('remove_word', function (data) {
+            console.log('Removing word:', data);
+            removeWordById(data.id);
+
+            updateWordCloud(); // Update the word cloud
+        });
+    }
+
+    function fetchWords() {
+        fetch(`http://10.16.27.17:5000/strings?page=${page}&per_page=${perPage}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Fetched data:", data); // Log the data for debugging
+                if (data.data.length > 0) {
+                    data.data.forEach(word => {
+                        if (!wordIds.has(word.id)) {
+                            createWordObject(word); // Store the word object directly
+                            wordQueue.push(word);   // Push it to the queue
+                            wordIds.add(word.id);   // Track the id
+                        }
+                    });
+                    if (data.data.length === perPage) {
+                        page++;
+                        fetchWords(); // Fetch more if there's more data
+                    } else {
+                        allWordsFetched = true;
+                    }
+                } else {
+                    allWordsFetched = true;
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching words:', error);
+            });
+    }
+
+
+    function removeWordById(id) {
+        let wordObj = wordsMap.get(id);
+        if (wordObj) {
+            console.log(`Removing word with id: ${id}`);
+            wordsMap.delete(id);
+            wordIds.delete(id);
+        } else {
+            console.error(`No word found for id: ${id}`);
+        }
+    }
+
+
+    function createWordObject(word) {
+        if (!wordsMap.has(word.id)) {
+            // Select random values for each style property
+
+            const fontFamily = getRandomItem(['Merriweather', 'Oswald', 'Playfair Display', 'Lora', 'Lobster']);
+
+
+            // Store the word object in the map with its id as the key, including the new styles
+            wordsMap.set(word.id, {
+                id: word.id,
+                string: word.string,
+                count: word.count,
+                fontFamily: fontFamily,           // Assign the random font family
+            });
+
+
+            updateWordCloud()
+        }
+    }
+
+    // Call this function when the page is loaded or resized
+    window.onload = function () {
+        resizeCanvasToFullScreen();
+        setup(); // Initialize everything else after the canvas is set up
+    };
+
+    // Handle window resize event to adjust the canvas dynamically
+    window.onresize = function () {
+        resizeCanvasToFullScreen();
+    };
+
+</script>
+
+</html>

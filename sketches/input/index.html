@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MFAGarnett Font Demo</title>
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/css/index.css"> -->
+    <style>
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("./fonts/MFAGarnett-Light.eot");
+            src: url("./fonts/MFAGarnett-Light.eot?#iefix") format("embedded-opentype"),
+                url("./fonts/MFAGarnett-Light.woff2") format("woff2"),
+                url("./fonts/MFAGarnett-Light.woff") format("woff");
+            font-style: normal;
+            font-weight: 300;
+            /* Light */
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("./fonts/MFAGarnett-LightItalic.eot");
+            src: url("./fonts/MFAGarnett-LightItalic.eot?#iefix") format("embedded-opentype"),
+                url("./fonts/MFAGarnett-LightItalic.woff2") format("woff2"),
+                url("./fonts/MFAGarnett-LightItalic.woff") format("woff");
+            font-style: italic;
+            font-weight: 300;
+            /* Light Italic */
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("./fonts/MFAGarnett-Regular.eot");
+            src: url("./fonts/MFAGarnett-Regular.eot?#iefix") format("embedded-opentype"),
+                url("./fonts/MFAGarnett-Regular.woff2") format("woff2"),
+                url("./fonts/MFAGarnett-Regular.woff") format("woff");
+            font-style: normal;
+            font-weight: 400;
+            /* Regular */
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("./fonts/MFAGarnett-RegularItalic.eot");
+            src: url("./fonts/MFAGarnett-RegularItalic.eot?#iefix") format("embedded-opentype"),
+                url("./fonts/MFAGarnett-RegularItalic.woff2") format("woff2"),
+                url("./fonts/MFAGarnett-RegularItalic.woff") format("woff");
+            font-style: italic;
+            font-weight: 400;
+            /* Regular Italic */
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("./fonts/MFAGarnett-Semibold.eot");
+            src: url("./fonts/MFAGarnett-Semibold.eot?#iefix") format("embedded-opentype"),
+                url("./fonts/MFAGarnett-Semibold.woff2") format("woff2"),
+                url("./fonts/MFAGarnett-Semibold.woff") format("woff");
+            font-style: normal;
+            font-weight: 600;
+            /* Semibold */
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("./fonts/MFAGarnett-SemiboldItalic.eot");
+            src: url("./fonts/MFAGarnett-SemiboldItalic.eot?#iefix") format("embedded-opentype"),
+                url("./fonts/MFAGarnett-SemiboldItalic.woff2") format("woff2"),
+                url("./fonts/MFAGarnett-SemiboldItalic.woff") format("woff");
+            font-style: italic;
+            font-weight: 600;
+            /* Semibold Italic */
+        }
+
+
+        /* KEYBOARD THEME */
+        .hg-theme-default {
+            background-color: #cecece;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-family: 'MFAGarnett', sans-serif;
+            overflow: hidden;
+            padding: 5px;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+            width: 90%;
+        }
+
+        .hg-theme-default .hg-button span {
+            pointer-events: none;
+        }
+
+        .hg-theme-default button.hg-button {
+            border-width: 0;
+            font-size: inherit;
+            outline: 0;
+        }
+
+        .hg-theme-default .hg-button {
+            display: inline-block;
+            flex-grow: 1;
+        }
+
+        .hg-theme-default .hg-row {
+            display: flex;
+        }
+
+        .hg-theme-default .hg-row:not(:last-child) {
+            margin-bottom: 5px;
+        }
+
+        .hg-theme-default .hg-row .hg-button-container,
+        .hg-theme-default .hg-row .hg-button:not(:last-child) {
+            margin-right: 5px;
+        }
+
+        .hg-theme-default .hg-row>div:last-child {
+            margin-right: 0;
+        }
+
+        .hg-theme-default .hg-row .hg-button-container {
+            display: flex;
+        }
+
+        .hg-theme-default .hg-button {
+            align-items: center;
+            background: #fff;
+            border-bottom: 1px solid #b5b5b5;
+            border-radius: 5px;
+            box-shadow: 0 0 3px -1px rgba(0, 0, 0, 0.3);
+            box-sizing: border-box;
+            cursor: pointer;
+            display: flex;
+            height: 4vw;
+            justify-content: center;
+            padding: 5px;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        }
+
+        .hg-theme-default .hg-button.hg-standardBtn {
+            width: 20px;
+        }
+
+        .hg-theme-default .hg-button.hg-activeButton {
+            background: #efefef;
+        }
+
+        .hg-theme-default.hg-layout-numeric .hg-button {
+            align-items: center;
+            display: flex;
+            height: 60px;
+            justify-content: center;
+            width: 33.3%;
+        }
+
+        .hg-theme-default .hg-button.hg-button-numpadadd,
+        .hg-theme-default .hg-button.hg-button-numpadenter {
+            height: 85px;
+        }
+
+        .hg-theme-default .hg-button.hg-button-numpad0 {
+            width: 105px;
+        }
+
+        .hg-theme-default .hg-button.hg-button-com {
+            max-width: 85px;
+        }
+
+        .hg-theme-default .hg-button.hg-standardBtn.hg-button-at {
+            max-width: 45px;
+        }
+
+        .hg-theme-default .hg-button.hg-selectedButton {
+            background: rgba(5, 25, 70, 0.53);
+            color: #abc63e;
+        }
+
+        .hg-theme-default .hg-button.hg-standardBtn[data-skbtn=".com"] {
+            max-width: 82px;
+        }
+
+        .hg-theme-default .hg-button.hg-standardBtn[data-skbtn="@"] {
+            max-width: 60px;
+        }
+
+        .hg-candidate-box {
+            background: #ececec;
+            border-bottom: 2px solid #b5b5b5;
+            border-radius: 5px;
+            display: inline-flex;
+            margin-top: -10px;
+            position: absolute;
+            transform: translateY(-100%);
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        ul.hg-candidate-box-list {
+            display: flex;
+            flex: 1;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        li.hg-candidate-box-list-item {
+            align-items: center;
+            display: flex;
+            height: 40px;
+            justify-content: center;
+            width: 40px;
+        }
+
+        li.hg-candidate-box-list-item:hover {
+            background: rgba(0, 0, 0, 0.03);
+            cursor: pointer;
+        }
+
+        li.hg-candidate-box-list-item:active {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .hg-candidate-box-prev:before {
+            content: "◄";
+        }
+
+        .hg-candidate-box-next:before {
+            content: "►";
+        }
+
+        .hg-candidate-box-next,
+        .hg-candidate-box-prev {
+            align-items: center;
+            color: #cecece;
+            cursor: pointer;
+            display: flex;
+            padding: 0 10px;
+        }
+
+        .hg-candidate-box-next {
+            border-bottom-right-radius: 5px;
+            border-top-right-radius: 5px;
+        }
+
+        .hg-candidate-box-prev {
+            border-bottom-left-radius: 5px;
+            border-top-left-radius: 5px;
+        }
+
+        .hg-candidate-box-btn-active {
+            color: #cecece;
+        }
+
+        /* END */
+
+        body {
+            font-family: 'MFAGarnett', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: #cecece;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-weight: 600;
+        }
+
+        .inputContainer {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-top: 4.3vw;
+            padding: 0rem 2.3vw 0 2.3vw;
+        }
+
+        /* Corrected CSS for swash */
+        .swash .first-word {
+            -moz-font-feature-settings: "swsh" 1;
+            -webkit-font-feature-settings: "swsh" 1;
+            font-feature-settings: "swsh" 1;
+        }
+
+        /* the logo should sit in the bottom rigth corner of the page, the logo src is logo/logo.svg */
+        .logo {
+            width: 234px;
+
+            position: fixed;
+            bottom: 0;
+            right: 0;
+
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .header {
+            background-color: #a4c700;
+            border-bottom: 2px solid black;
+            font-family: 'MFAGarnett', sans-serif;
+            font-weight: 600;
+            transition: margin-top 0.8s ease-in-out;
+            /* Smooth transition */
+            position: relative;
+            /* Make sure the header stays within the normal document flow */
+            top: 0;
+            width: 100%;
+        }
+
+        .header.hide {
+            margin-top: -16vw;
+            /* Adjust this value based on the height of the header */
+        }
+
+
+        .input {
+            width: 100%;
+            padding: 0rem 0 1rem 0rem;
+            /* font-size: 1.5rem; */
+            font-size: 1.8vw;
+            border: none;
+            border-bottom: 2px solid black;
+            color: black;
+            font-family: 'MFAGarnett', sans-serif;
+
+        }
+
+        .input::placeholder {
+            color: #cccccc;
+
+
+        }
+
+        .voteButton {
+            background-color: #efeee5;
+            color: black;
+            padding: .5rem;
+            margin-top: 2.8vw;
+            font-size: 1.4vw;
+            border: 2px solid black;
+            cursor: pointer;
+            width: 100%;
+            font-family: 'MFAGarnett', sans-serif;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.2s ease;
+        }
+
+        .voteButton:hover {
+            background-color: #ecebe1;
+
+        }
+
+        .voteButton:active {
+            background-color: #dfded5;
+            /* transform: scale(0.998); */
+            /* Slightly shrink for a pressed effect */
+            /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
+            /* Reduced shadow for a pressed state */
+        }
+
+        .input:focus {
+            outline: none;
+        }
+
+        .input:active {
+            outline: none;
+        }
+
+        /* a4c700 */
+        .upper {
+            padding: 2vh 2rem 0vh 2rem;
+            text-align: left;
+            /* font-size: 1.5rem; */
+            font-size: 4.5vw;
+            color: black;
+            border-bottom: 2px solid black;
+        }
+
+        .lower {
+            padding: 0 0 0vh 2rem;
+            text-align: left;
+            /* font-size: 1.5rem; */
+            font-size: 4.5vw;
+            color: black;
+            /* border-bottom: 2px solid black; */
+        }
+
+        .keyboard {
+            margin-top: 2.8vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0rem 7vw 0rem 7vw;
+            ;
+
+        }
+
+        /* loading state */
+
+        .animatedFooter {
+            position: fixed;
+            /* Makes the footer stick to the viewport */
+            bottom: 0;
+            /* Stick it to the bottom of the viewport */
+            left: 0;
+            /* Ensure it's positioned at the left edge */
+            width: 100%;
+            /* Full width */
+            padding: 1vw 0;
+            background-color: #efeee5;
+            border-bottom: 2px solid black;
+            border-top: 2px solid black;
+            z-index: 100;
+            /* Ensure the footer is on top of other content */
+        }
+
+
+        .carouselWrapper {
+            display: flex;
+            white-space: nowrap;
+            will-change: transform;
+        }
+
+        .footerText {
+            display: inline-block;
+            font-family: 'MFAGarnett', sans-serif;
+            font-weight: 300;
+            color: black;
+
+            padding-right: 0.5vw;
+            /* Spacing between repeated text */
+            font-size: 3vw;
+            /* Customize font-size as needed */
+            line-height: 50px;
+            /* Matches the height of the container */
+        }
+
+
+
+        /* Responsive Design */
+        /* @media (min-width: 768px) {
+            .upper {
+                padding: 3vh 3rem 1vh 4rem;
+                font-size: 2rem;
+            }
+
+            .lower {
+                padding: 0 0 1vh 4rem;
+                font-size: 3rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .upper {
+                padding: 3vh 4rem 1vh 2rem;
+                font-size: 4.5vw;
+            }
+
+            .lower {
+                padding: 0 0 1vh 2rem;
+                font-size: 4.5vw;
+            }
+        } */
+
+        /* LoadingState */
+
+
+        .loadingContainer {
+
+            justify-content: center;
+            align-items: center;
+
+            /* Allow this container to grow and fill the remaining space */
+        }
+
+        .loading {
+            margin-top: 10vw;
+            font-family: 'MFAGarnett', sans-serif;
+            font-size: 3vw;
+            font-weight: 600;
+            color: black;
+            text-align: center;
+        }
+
+        /* sucsessState */
+
+
+
+        .resultImage {
+            width: 30vw;
+            /* center it in the container */
+        }
+
+        .resultContainer {
+            margin-top: 7vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            /* This will center the image horizontally */
+            text-align: center;
+            /* This ensures the container text aligns properly */
+        }
+
+        .resultText {
+            font-size: 1.8vw;
+            font-weight: 600;
+            color: black;
+            text-align: center;
+        }
+
+        .subText {
+            font-size: 1.4vw;
+            font-weight: 300;
+            color: black;
+            text-align: center;
+        }
+
+        .arrow {
+            font-size: 4vw;
+            font-weight: 600;
+            color: black;
+            text-align: center;
+        }
+
+        .moderationContainer {
+            width: 100%;
+            /* No fixed height */
+            overflow: hidden;
+            /* Ensure no scrollbars */
+            z-index: 0;
+        }
+
+        iframe {
+            width: 100%;
+            min-height: 100vh;
+            /* Ensure the iframe fills the container */
+            border: none;
+            /* Remove the iframe border */
+            overflow: hidden;
+            /* Ensure no scrollbars */
+        }
+
+        .moderationState {
+            position: relative;
+        }
+
+        /* exit button is moderatly large and on the right side of the div */
+        /* Ensure the iframe is under the exit button */
+        .moderationContainer iframe {
+            z-index: 0;
+        }
+
+        /* Ensure the exit button is above the iframe */
+        .exitButton {
+            z-index: 1000;
+            /* Increase the z-index to ensure it is above the iframe */
+            position: absolute;
+            top: 1vw;
+            right: 1vw;
+            font-size: 2vw;
+            font-weight: 600;
+            color: black;
+            background-color: #a4c700;
+            padding: 0;
+            border: 2px solid black;
+            cursor: pointer;
+            font-family: 'MFAGarnett', sans-serif;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.2s ease;
+            padding: 0.5vw 1.2vw 0.5vw 1.2vw;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="upper">
+            <div class="swash">► <span class="first-word">What</span> one word comes to mind when</div>
+        </div>
+        <div class="lower">
+            <div class="swash" style="padding-left: 1rem;">you think of <span class="first-word">Democracy</span>?</div>
+        </div>
+    </div>
+
+    <div class="stateContainer">
+        <div class="inputState">
+            <div class="inputContainer">
+                <input class="input" placeholder="Share your thoughts!" />
+                <button class="voteButton">Cast a Vote</button>
+
+                <!-- <img class="logo" src="logo/logo.svg" alt="Logo"> -->
+            </div>
+            <div class="keyboard">
+                <div class="simple-keyboard"></div>
+            </div>
+
+        </div>
+        <div class="LoadingState">
+            <div class="loadingContaner">
+                <div class="loading">
+                    Counting the votes<br>...
+                </div>
+            </div>
+            <div class="animatedFooter">
+                <div class="carouselWrapper">
+                    <div class="footerText"> Loading ►</div>
+                    <div class="footerText"> Loading ►</div>
+                    <div class="footerText"> Loading ►</div>
+                    <div class="footerText"> Loading ►</div>
+                    <div class="footerText"> Loading ►</div>
+                    <div class="footerText"> Loading ►</div>
+                    <div class="footerText"> Loading ►</div>
+                    <div class="footerText"> Loading ►</div>
+                    <div class="footerText"> Loading ►</div>
+                    <div class="footerText"> Loading ►</div>
+                </div>
+            </div>
+
+
+        </div>
+        <div class="successState">
+            <div class="resultContainer">
+                <image class="resultImage" src="src/suc.png" alt="Result">
+                    <div class="arrow">
+                        ↑
+                    </div>
+                    <div class="resultText">
+                        Thank you for sharing!
+                    </div>
+                    <div class="subText">
+                        Look at the projection above to view your word alongside others.
+                    </div>
+            </div>
+
+        </div>
+        <div class="errorState">
+            <div class="resultContainer">
+
+
+                <div class="resultText
+                    ">
+
+                    Oops! Something went wrong.
+                </div>
+                <div class="subText">
+                    Please try again later.
+                </div>
+            </div>
+
+        </div>
+        <div class="moderationState">
+
+            <div class="moderationContainer">
+
+            </div>
+
+            <button class="exitButton">X</button>
+
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/index.js"></script>
+    <script src="src/animate.js"></script>
+    <script src="src/stateManager.js"></script>
+    <script src="src/submit.js"></script>
+    <script src="src/getMod.js"></script>
+</body>
+
+</html>

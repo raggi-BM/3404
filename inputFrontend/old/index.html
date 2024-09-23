@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -112,17 +113,87 @@
             from {
                 transform: rotate(0deg);
             }
+
             to {
                 transform: rotate(360deg);
             }
         }
 
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Light.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Light.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Light.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Light.woff') }}") format("woff");
+            font-style: normal;
+            font-weight: 300;
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.woff') }}") format("woff");
+            font-style: italic;
+            font-weight: 300;
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.woff') }}") format("woff");
+            font-style: normal;
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.woff') }}") format("woff");
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.woff') }}") format("woff");
+            font-style: normal;
+            font-weight: 600;
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.woff') }}") format("woff");
+            font-style: italic;
+            font-weight: 600;
+        }
+
+
+        .swash {
+            -moz-font-feature-settings: "swsh";
+            -webkit-font-feature-settings: "swsh";
+            font-feature-settings: "swsh"
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- <h1>Store Your String</h1> -->
-        <input type="text" id="stringInput" placeholder="what are you'r thoughts on democracy?" onfocus="clearPlaceholder()" onblur="restorePlaceholder()" oninput="checkInput()" onkeypress="handleKeyPress(event)">
+        <input type="text" id="stringInput" placeholder="what are you'r thoughts on democracy?"
+            onfocus="clearPlaceholder()" onblur="restorePlaceholder()" oninput="checkInput()"
+            onkeypress="handleKeyPress(event)">
         <div class="button-container">
             <button id="submitButton" onclick="storeString()" disabled></button>
         </div>
@@ -176,33 +247,39 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ string: stringValue }),
+                body: JSON.stringify({ 
+                    string: stringValue
+                    , dev: true 
+                }),
+
                 credentials: 'include'
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.message) {
-                    console.log('Success:', data.message);
-                } else if (data.error) {
-                    console.error('Error:', data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error.message);
-            })
-            .finally(() => {
-                stringInput.disabled = false;
-                stringInput.placeholder = "what are you'r thoughts on democracy?";
-                submitButton.disabled = true; // Keep the button disabled until new input
-                submitButton.classList.remove('loading');
-                submitButton.classList.remove('active');
-                submitButton.textContent = ''; // Reset to initial state
-            });
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.message) {
+                        console.log('Success:', data.message);
+                    } else if (data.error) {
+                        console.error('Error:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error.message);
+                })
+                .finally(() => {
+                    stringInput.disabled = false;
+                    stringInput.placeholder = "what are you'r thoughts on democracy?";
+                    submitButton.disabled = true; // Keep the button disabled until new input
+                    submitButton.classList.remove('loading');
+                    submitButton.classList.remove('active');
+                    submitButton.textContent = ''; // Reset to initial state
+                    // set the input to selected
+                    stringInput.focus();
+                });
         }
 
         function handleKeyPress(event) {
@@ -212,4 +289,5 @@
         }
     </script>
 </body>
+
 </html>

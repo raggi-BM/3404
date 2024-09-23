@@ -1,0 +1,50 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: rgb(255, 255, 255);
+}
+
+#wordCloudCanvas {
+    z-index: 3;
+    margin: 0;
+    padding: 0;
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    /* dont render the canvas on the screen but only for the calculations; */
+    /* display: none;  */
+}
+
+#fullScreenCanvas {
+    z-index: 5;
+    margin: 0;
+    padding: 0;
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 2;
+    background-color: transparent;
+    /* display: none; */
+    /* background-color: #efeee5; */
+}
+
+#matterCanvas {
+    z-index: 0;
+    margin: 0;
+    padding: 0;
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 3;
+    background-color: transparent;
+    /* display: none; */
+    /* background-color: #502d4d; */
+}

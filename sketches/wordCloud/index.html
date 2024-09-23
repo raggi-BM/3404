@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Cloud with Animation</title>
+    <script src="./wordcloud2.js"></script> <!-- Make sure this includes your modified wordcloud2.js -->
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #wordCloudCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #fullScreenCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            background-color: #502d4d;
+            /* background-color: transparent; */
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="fullScreenCanvas"></canvas> <!-- Full-screen canvas for animation -->
+    <canvas id="wordCloudCanvas"></canvas> <!-- Visible canvas for word cloud -->
+
+    <script>
+        var hiddenCanvas = document.getElementById('wordCloudCanvas');
+        var fullScreenCanvas = document.getElementById('fullScreenCanvas');
+        var ctx = fullScreenCanvas.getContext('2d');
+
+
+        function clearFullscreenCanvasAndReAnimate() {
+            ctx.clearRect(0, 0, fullScreenCanvas.width, fullScreenCanvas.height);
+            onWordCloudComplete();
+        }
+
+        // when the users presses space, clear the canvas and re-animate the words
+        document.addEventListener('keydown', function (event) {
+            if (event.code === 'Space') {
+                clearFullscreenCanvasAndReAnimate();
+            }
+        });
+
+        function resizeCanvas() {
+            fullScreenCanvas.width = window.innerWidth;
+            fullScreenCanvas.height = window.innerHeight;
+            hiddenCanvas.width = window.innerWidth;
+            hiddenCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        var words = [
+            ['Freedom', 12, '#8c4667'],
+            ['Equality', 1, '#d9b8c4'],
+            ['Justice', 14, '#c19da7'],
+            ['Liberty', 16, '#624e69'],
+            ['Fairness', 10, '#3e1d34'],
+            ['Participation', 20, '#8c4667'],
+            ['Representation', 22, '#d9b8c4']
+
+        ];
+
+        // Word count in the list
+        var totalWords = words.length;
+
+        function easeInOut(t) {
+            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+        }
+
+        function animateWords(wordData) {
+            var startTime = null;
+
+            // Randomize the animation duration and delay for each word
+            wordData.forEach(function (word) {
+                word.delay = Math.random() * 500;  // Random delay between 0 and 500 ms
+                word.duration = 800 + Math.random() * 600;  // Random duration between 800 and 1400 ms
+            });
+
+            function render(time) {
+                if (!startTime) startTime = time;
+
+                ctx.clearRect(0, 0, fullScreenCanvas.width, fullScreenCanvas.height);
+
+                wordData.forEach(function (word) {
+                    var elapsedTime = time - startTime - word.delay;
+
+                    if (elapsedTime > 0) {
+                        var progress = elapsedTime / word.duration;
+                        var easedProgress = easeInOut(Math.min(progress, 1));
+
+                        var startX = fullScreenCanvas.width / 2 - word.offsetX;
+                        var startY = fullScreenCanvas.height / 2 - word.offsetY;
+
+                        var targetX = word.x;
+                        var targetY = word.y;
+
+                        var x = startX + (targetX - startX) * easedProgress;
+                        var y = startY + (targetY - startY) * easedProgress;
+
+                        var animatedFontSize = word.size * easedProgress;
+
+                        ctx.save();
+                        ctx.scale(1 / word.mu, 1 / word.mu);
+                        ctx.fillStyle = word.color;  // Use color from word data
+
+                        ctx.translate(x * word.mu, y * word.mu);
+
+                        if (word.rotation !== 0) {
+                            ctx.rotate(-word.rotation);
+                        }
+
+                        ctx.font = animatedFontSize * word.mu + 'px "Trebuchet MS", "Heiti TC", "微軟正黑體", "Arial Unicode MS", "Droid Fallback Sans", sans-serif';
+                        ctx.textBaseline = word.baseline;
+                        ctx.fillText(word.text, word.offsetX * word.mu, (word.offsetY + animatedFontSize * 0.5) * word.mu);
+                        // // draw a cross at the origin (useful for debugging)
+                        // ctx.beginPath();
+                        // ctx.moveTo(-5, 0);
+                        // ctx.lineTo(5, 0);
+                        // ctx.moveTo(0, -5);
+                        // ctx.lineTo(0, 5);
+                        // ctx.stroke();
+
+                        ctx.restore();
+                    }
+                });
+
+                if (time - startTime < Math.max(...wordData.map(word => word.delay + word.duration))) {
+                    requestAnimationFrame(render);
+                }
+            }
+
+            requestAnimationFrame(render);
+        }
+
+
+
+
+        // Initialize the WordCloud with proxy support
+        var proStatus = new Proxy({ done: false }, {
+            set: function (target, prop, value) {
+                if (prop === 'done' && value === true) {
+                    console.log('Word cloud generation is done!');
+                    onWordCloudComplete();
+                }
+                target[prop] = false; // Store the new value
+                return true;
+            }
+        });
+
+        function onWordCloudComplete() {
+            var wordCloudData = getWordCloudData();
+
+            // Attach color to each word data
+            wordCloudData.forEach((data, index) => {
+                data.color = words[index][2];  // Add color from the words array
+            });
+
+            // Now animate the words
+            animateWords(wordCloudData);
+        }
+
+        // Initialize the WordCloud
+        WordCloud(hiddenCanvas, {
+            list: words.map(word => [word[0], word[1]]),
+            gridSize: 48,
+            weightFactor: 3,
+            color: 'random-dark',
+            rotateRatio: 0,
+            backgroundColor: '#f0f0f0',
+            shrinkToFit: true,
+            drawMask: false,
+            done: function () {
+                proStatus.done = true; // Trigger the proxy when done
+            }
+        });
+
+    </script>
+</body>
+
+</html>
