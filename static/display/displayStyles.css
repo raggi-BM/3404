@@ -1,0 +1,87 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: rgb(255, 255, 255);
+}
+
+#wordCloudCanvas {
+    z-index: 3;
+    margin: 0;
+    padding: 0;
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    /* dont render the canvas on the screen but only for the calculations; */
+    display: none; 
+}
+
+#fullScreenCanvas {
+    z-index: 5;
+    margin: 0;
+    padding: 0;
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 2;
+    background-color: transparent;
+    /* opacity: 0.4; Apply 40% transparency to the entire canvas */
+
+    /* display: none; */
+    /* background-color: #efeee5; */
+}
+
+#matterCanvas {
+    z-index: 0;
+    margin: 0;
+    padding: 0;
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 3;
+    background-color: transparent;
+    /* display: none; */
+    /* background-color: #502d4d; */
+}
+
+@font-face {
+    font-family: 'BebasNeueBold';
+    src: url('/static/display/fonts/BebasNeueBold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Bookmania';
+    src: url('/static/display/fonts/Bookmania.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'BookmaniaSemiBold';
+    src: url('/static/display/fonts/BookmaniaSemiBold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'BookmanJFPro';
+    src: url('/static/display/fonts/BookmanJFPro.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'DINCondensed';
+    src: url('/static/display/fonts/DINCondensed.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'KorolevBold';
+    src: url('/static/display/fonts/KorolevBold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'NewSpiritMedItalic';
+    src: url('/static/display/fonts/NewSpiritMedItalic.ttf') format('truetype');
+}

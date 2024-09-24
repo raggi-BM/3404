@@ -7,7 +7,7 @@
 # | $$$$$$$/| $$$$$$$$| $$  | $$|  $$$$$$/| $$ \  $$| $$ \/  | $$| $$  | $$   | $$   | $$  | $$
 # |_______/ |________/|__/  |__/ \______/ |__/  \__/|__/     |__/|__/  |__/   |__/   |__/  |__/
 
-from flask import Flask, request, jsonify, send_from_directory, render_template_string
+from flask import Flask, request, jsonify, send_from_directory, render_template_string, make_response
 from flask_cors import CORS
 import sqlite3
 import socket
@@ -428,7 +428,32 @@ def serve_input_frontend():
         content = file.read()
     return render_template_string(content, ip_address=ip_address)
 
-# Route to serve dynamic sketch.js for display frontend
+# Serve .js and .css files with dynamic placeholder replacement
+
+
+@app.route('/dynamic-static/<path:filename>')
+def serve_dynamic_static_file(filename):
+    file_path = os.path.join('static', filename)
+
+    # Only handle .js and .css files for dynamic content replacement
+    if filename.endswith('.js') or filename.endswith('.css'):
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as file:
+                content = file.read()
+                # Replace the {{ ip_address }} placeholder with the actual IP address
+                content = content.replace('{{ ip_address }}', get_local_ip())
+            # Create a response with appropriate headers
+            response = make_response(render_template_string(content))
+            response.headers['Content-Type'] = 'application/javascript' if filename.endswith(
+                '.js') else 'text/css'
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+            return response
+        else:
+            return 'File not found', 404
+    else:
+        return send_from_directory('static', filename)
 
 
 @app.route('/display/static/sketch.js')
