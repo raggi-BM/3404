@@ -1135,74 +1135,110 @@ if (!window.clearImmediate) {
       var offsetY = info.paddedHeight - lowestGreenPixelY - (margin * 2 + paddingHeight); // Offset from the bottom of the box
 
       // Step 6: Draw **two separate buffer zones (squares)** that are 20px taller than the original box
-      var bufferSize = 100; // Set the size of each buffer square (300px wide)
-      var bufferHeight = boxHeight + info.paddedHeight; // Increase the buffer height by 20px
-      var bufferTopOffset = info.paddedHeight; // Shift the buffer 10px up and extend it 10px down
+      var bufferSize = 80; // Set the size of each buffer square (100px wide)
+      var bufferHeight =  info.paddedHeight; // Increase the buffer height by 20px
+      var bufferTopOffset = info.paddedHeight; // Shift the buffer up by 10px
+
+      // Adjust the overlap by 40px
+      var overlap = 10;
 
       // Left buffer square (placed left of the bounding box)
-      var leftBufferX = boxX - bufferSize;
+      var leftBufferX = boxX - bufferSize + overlap; // Overlap the box by 40px
       var leftBufferY = boxY - bufferTopOffset; // Move the buffer up by 10px
       ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)'; // Light blue for buffer zone
       ctx.lineWidth = 2;
-      ctx.strokeRect(leftBufferX, leftBufferY, bufferSize, bufferHeight); // Buffer 20px taller
+      ctx.strokeRect(leftBufferX-2, leftBufferY-2, bufferSize + 4, bufferHeight + 4); // Buffer 20px taller
 
       // Right buffer square (placed right of the bounding box)
-      var rightBufferX = boxX + boxWidth;
+      var rightBufferX = boxX + boxWidth - overlap; // Overlap the box by 40px
       var rightBufferY = boxY - bufferTopOffset; // Move the buffer up by 10px
-      ctx.strokeRect(rightBufferX, rightBufferY, bufferSize, bufferHeight); // Buffer 20px taller
-      debugger
-      // Step 7: Check pixels in the buffer zones for green pixels
-      function checkBufferZone(startX, startY, width, height, isLeftBuffer) {
-        var bufferData = ctx.getImageData(startX, startY, width, height); // Buffer zone area
-        var bufferPixels = bufferData.data;
-        var farthestGreenPixelX = 0;
+      ctx.strokeRect(rightBufferX-2, rightBufferY-2, bufferSize+4, bufferHeight+4); // Buffer 20px taller
 
-        for (var i = 0; i < bufferPixels.length; i += 4) {
-          var red = bufferPixels[i];
-          var green = bufferPixels[i + 1];
-          var blue = bufferPixels[i + 2];
-          var alpha = bufferPixels[i + 3];
+// Step 7: Check pixels in the buffer zones for green pixels
+function checkBufferZone(startX, startY, width, height, isLeftBuffer) {
+  var bufferData = ctx.getImageData(startX, startY, width, height); // Buffer zone area
+  var bufferPixels = bufferData.data; // RGBA values
 
-          var pixelIndex = i / 4;
-          var xPos = Math.floor(pixelIndex % width);
+  var foundGreenPixel = false; // Flag to track if a green pixel is found
+  var farthestGreenPixelX = 0; // Default value to track the farthest green pixel
+  var halfWidth = Math.floor(width / 2); // Calculate half of the buffer width
 
-          if (red === 55 && green === 126 && blue === 34 && alpha > 0) {
-            // console.log('Greenish pixel in buffer at X:', xPos);
-            if (isLeftBuffer) {
-              // We're checking the left buffer, so we calculate how far the pixel is from the **right side** of the buffer
-              if ((width - xPos) > farthestGreenPixelX) {
-                farthestGreenPixelX = width - xPos; // Move right based on distance from the right edge
-              }
-            } else {
-              // We're checking the right buffer, so we calculate how far the pixel is from the **left side** of the buffer
-              if (xPos > farthestGreenPixelX) {
-                farthestGreenPixelX = xPos; // Move left based on distance from the left edge
-              }
-            }
-          }
-        }
+  // Define the scan direction based on left or right buffer
+  var startColumn = isLeftBuffer ? width - 1 : 0; // Start from right for left buffer, left for right buffer
+  var step = isLeftBuffer ? -1 : 1; // Step direction: left buffer moves left, right buffer moves right
 
-        return farthestGreenPixelX;
+  // Scan columns one by one
+  for (var x = startColumn; (isLeftBuffer ? x >= 0 : x < width); x += step) {
+    var isGreenPixelInColumn = false;
+
+    // Check every row in this column for green pixels
+    for (var y = 0; y < height; y++) {
+      var pixelIndex = (y * width + x) * 4; // Calculate the RGBA index for this pixel
+
+      var red = bufferPixels[pixelIndex];
+      var green = bufferPixels[pixelIndex + 1];
+      var blue = bufferPixels[pixelIndex + 2];
+      var alpha = bufferPixels[pixelIndex + 3];
+
+      // Check if this pixel is green
+      if (red === 55 && green === 126 && blue === 34 && alpha > 0) {
+        isGreenPixelInColumn = true;
+        farthestGreenPixelX = isLeftBuffer ? (width - x) : x; // Track the farthest green pixel
+        foundGreenPixel = true; // Mark that we found at least one green pixel
+        break; // No need to check other rows if we found a green pixel in this column
       }
+    }
+
+    // Render the current column as red for visualization
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.5)'; // Red with transparency
+    ctx.fillRect(startX + x, startY, 1, height); // Render one column wide (x position)
+
+    // If we've reached half of the buffer zone, stop even if no green pixel was found
+    if (Math.abs(startColumn - x) >= halfWidth && !foundGreenPixel) {
+      break;
+    }
+
+    // If we find a column without any green pixels and have passed half the buffer zone, stop scanning
+    if (!isGreenPixelInColumn && Math.abs(startColumn - x) >= halfWidth) {
+      break;
+    }
+  }
+
+  // If no green pixel was found, return 0
+  if (!foundGreenPixel) {
+    return 0;
+  }
+
+  // Return the positive value for the left buffer and negative for the right buffer
+  return isLeftBuffer ? farthestGreenPixelX : -farthestGreenPixelX;
+}
+
+      
+      
+
+
 
       // Check left and right buffer zones
       var farthestGreenPixelLeft = checkBufferZone(leftBufferX, leftBufferY, bufferSize, bufferHeight, true);
       var farthestGreenPixelRight = checkBufferZone(rightBufferX, rightBufferY, bufferSize, bufferHeight, false);
       console.log('Farthest green pixel in left buffer:', farthestGreenPixelLeft);
       console.log('Farthest green pixel in right buffer:', farthestGreenPixelRight);
+      
       // Sum the distances from both buffers
       var farthestGreenPixelSum = 0;
-
-      if (farthestGreenPixelRight > 0 && farthestGreenPixelLeft > 0) {
-        // Center by averaging the distances from both buffers
-        farthestGreenPixelSum = farthestGreenPixelRight - farthestGreenPixelLeft;
-      } else if (farthestGreenPixelRight > 0) {
-        // No green pixels in left buffer, move left
-        farthestGreenPixelSum = -farthestGreenPixelRight;
+      
+      if (farthestGreenPixelRight < 0 && farthestGreenPixelLeft > 0) {
+        // This is the case where the left buffer is positive, and right buffer is negative as expected
+        farthestGreenPixelSum = farthestGreenPixelLeft + farthestGreenPixelRight;
+      } else if (farthestGreenPixelRight < 0) {
+        // No green pixels in left buffer, move left (because right is negative)
+        farthestGreenPixelSum = farthestGreenPixelRight;
       } else if (farthestGreenPixelLeft > 0) {
         // No green pixels in right buffer, move right
         farthestGreenPixelSum = farthestGreenPixelLeft;
       }
+      
+      
 
 
       // Step 8: Adjust horizontal position based on buffer zones

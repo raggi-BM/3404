@@ -18,7 +18,7 @@ html {
     top: 0;
     z-index: 1;
     /* dont render the canvas on the screen but only for the calculations; */
-    display: none; 
+    /* display: none;  */
 }
 
 #fullScreenCanvas {
