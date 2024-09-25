@@ -36,7 +36,7 @@
     let perPage = 30;
     let allWordsFetched = false;
     let weightFactor = 50; // Default weight factor for WordCloud
-    const margin = 5; // Margin for the WordCloud
+    const margin = 3; // Margin for the WordCloud
 
     var hiddenCanvas = document.getElementById('wordCloudCanvas');
     var fullScreenCanvas = document.getElementById('fullScreenCanvas');
@@ -741,7 +741,7 @@ function drawHandDrawnCircle(ctx, circleData, scaleFactor) {
     const totalWordCount = Array.from(wordsMap.values()).reduce((acc, word) => acc + word.count, 0);
 
     // Base weight factor calculation (logarithmic)
-    const baseWeight = 100;
+    const baseWeight = 105;
     let weightFactor = baseWeight / (1 + Math.log(totalWordCount + 1)); // The +1 avoids log(0)
 
     // Calculate additional weight for words with count > 1

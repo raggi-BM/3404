@@ -1246,19 +1246,19 @@ if (!window.clearImmediate) {
     
             // If we've reached half of the buffer zone, and no green pixel was found in the current column, stop
             if (hasReachedHalf && !isGreenPixelInColumn && foundGreenPixel) {
-                //console.log('Farthest green pixel in left buffer:', farthestGreenPixelX);
+                console.log('Farthest green pixel in left buffer:', farthestGreenPixelX);
                 debugger;
                 break;
             }
     
             // If we've passed half and haven't found any green pixels at all, stop
             if (hasReachedHalf && !foundGreenPixel) {
-                //console.log('No green pixels found in left buffer');
+                console.log('No green pixels found in left buffer');
                 debugger;
                 break;
             }
         }
-    
+        debugger
         // Return the last farthest green pixel, even if none was found
         return isLeftBuffer ? farthestGreenPixelX : -farthestGreenPixelX;
     }
