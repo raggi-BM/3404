@@ -36,7 +36,7 @@
     let perPage = 30;
     let allWordsFetched = false;
     let weightFactor = 50; // Default weight factor for WordCloud
-    const margin = 10; // Margin for the WordCloud
+    const margin = 5; // Margin for the WordCloud
 
     var hiddenCanvas = document.getElementById('wordCloudCanvas');
     var fullScreenCanvas = document.getElementById('fullScreenCanvas');
@@ -99,7 +99,7 @@
     var proStatus = new Proxy({ done: false }, {
         set: function (target, prop, value) {
             if (prop === 'done' && value === true) {
-                console.log('Word cloud generation is done!');
+                // //console.log('Word cloud generation is done!');
                 onWordCloudComplete();
             }
             target[prop] = value; // Store the new value
@@ -115,11 +115,7 @@
             body.collisionFilter.group = allowCollisions ? 0 : -1;
         });
     }
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'c') { // Press 'c' to toggle collisions
-            toggleCollisions();
-        }
-    });
+ 
 
     function createWordObject(word) {
         const fontFamily = getRandomItem(['Merriweather', 'Oswald', 'Playfair Display', 'Lora', 'Lobster']);
@@ -147,18 +143,38 @@
 
 
     function onWordCloudComplete() {
-        var wordCloudData = getWordCloudData(); // Assume this gives you the positions from WordCloud.js
+    var wordCloudData = getWordCloudData(); // Assume this gives you the positions from WordCloud.js
 
-        wordCloudData.forEach((data) => {
-            const wordId = data.wordId; // Assuming `wordId` is included in `data`
-            const fontSize = data.size; // This is the target size
-            const mass = fontSize / 10;
+    wordCloudData.forEach((data) => {
+        const wordId = data.wordId; // Assuming `wordId` is included in `data`
+        const fontSize = data.size; // This is the target size
+        const mass = fontSize / 10;
 
-            const targetX = data.x; // Do NOT apply offsetX here for physics
-            const targetY = data.y; // Do NOT apply offsetY here for physics
+        const targetX = data.x; // Do NOT apply offsetX here for physics
+        const targetY = data.y; // Do NOT apply offsetY here for physics
 
-            if (wordBodies[wordId]) {
-                // If the word already exists, update all its relevant data with the new data
+        if (wordBodies[wordId]) {
+            // If the word already exists, update its relevant data
+            // const body = wordBodies[wordId].body;
+            // wordBodies[wordId].start = { x: body.position.x, y: body.position.y };
+            // wordBodies[wordId].target = { x: targetX, y: targetY };
+            // wordBodies[wordId].data.targetSize = fontSize;
+
+            // // Update the target offsets and dimensions from WordCloud.js
+            // wordBodies[wordId].data.info.currentFillTextWidth = wordBodies[wordId].data.info.fillTextWidth;
+            // wordBodies[wordId].data.info.currentFillTextHeight = wordBodies[wordId].data.info.fillTextHeight;
+
+            // wordBodies[wordId].data.info.targetFillTextWidth = data.info.fillTextWidth;
+            // wordBodies[wordId].data.info.targetFillTextHeight = data.info.fillTextHeight;
+
+            // wordBodies[wordId].data.info.currentOffsetX = wordBodies[wordId].data.info.currentOffsetX || data.offsetX;
+            // wordBodies[wordId].data.info.currentOffsetY = wordBodies[wordId].data.info.currentOffsetY || data.offsetY;
+            // wordBodies[wordId].data.info.targetOffsetX = data.offsetX;
+            // wordBodies[wordId].data.info.targetOffsetY = data.offsetY;
+
+            // wordBodies[wordId].data.info.currentPaddedHeight = wordBodies[wordId].data.info.paddedHeight;
+            // wordBodies[wordId].data.info.targetPaddedHeight = data.info.paddedHeight;
+                            // If the word already exists, update its relevant data
                 const body = wordBodies[wordId].body;
                 wordBodies[wordId].start = { x: body.position.x, y: body.position.y };
                 wordBodies[wordId].target = { x: targetX, y: targetY };
@@ -169,58 +185,108 @@
                 wordBodies[wordId].data.info.fillTextHeight = data.info.fillTextHeight;
                 wordBodies[wordId].data.info.targetOffsetX = data.offsetX;
                 wordBodies[wordId].data.info.targetOffsetY = data.offsetY;
+                wordBodies[wordId].data.info.targetPaddedHeight = data.info.paddedHeight;
 
-                console.log(`Updating existing word: ${data.text}, target size: ${fontSize}, new offsets: (${data.offsetX}, ${data.offsetY})`);
+                // Check if hand-drawn elements exist and update their targets
 
-            } else {
-                // If it's a new word, spawn it with the data from the wordCloud object
-                const spawnX = targetX;
-                const spawnY = targetY;
+            // Check if hand-drawn elements exist and update their targets
+            if (wordBodies[wordId].data.handDrawnElements) {
+                const handDrawnElements = wordBodies[wordId].data.handDrawnElements;
 
-                const bodyPadding = 0;
-                const bodyWidth = data.info.fillTextWidth + bodyPadding * 2;
-                const bodyHeight = data.info.fillTextHeight + bodyPadding * 2;
-
-                const body = Bodies.rectangle(spawnX, spawnY, bodyWidth, bodyHeight, {
-                    mass,
-                    frictionAir: 0.1,
-                    inertia: rotation ? Infinity : 0, // Prevent rotation if rotation is false
-                    collisionFilter: {
-                        group: -1 // Disable collisions for this body initially
-                    }
-                });
-
-                if (!rotation) {
-                    Body.setAngle(body, 0);
-                    Body.setAngularVelocity(body, 0);
+                if (handDrawnElements.circle) {
+                    handDrawnElements.circle.current = {
+                        textWidth: data.info.fillTextWidth,
+                        textHeight: data.info.fillTextHeight,
+                        lineWeight: data.info.paddedHeight/25
+                    };
+                    handDrawnElements.circle.target = {
+                        textWidth: data.info.fillTextWidth,
+                        textHeight: data.info.fillTextHeight,
+                        lineWeight: data.info.paddedHeight/25
+                    };
+                    //console.log(`Circle updated: Target textWidth and textHeight: ${handDrawnElements.circle.target.textWidth}, ${handDrawnElements.circle.target.textHeight}`);
                 }
 
-                World.add(world, body);
+                if (handDrawnElements.line) {
+                    handDrawnElements.line.current = {
+                        textWidth: data.info.fillTextWidth,
+                        textHeight: data.info.fillTextHeight,
+                        lineWeight: data.info.paddedHeight / 25 // Adjust lineWeight separately
+                    };
+                    handDrawnElements.line.target = {
+                        textWidth: data.info.fillTextWidth,
+                        textHeight: data.info.fillTextHeight,
+                        lineWeight: data.info.paddedHeight / 25
+                    };
+                    //console.log(`Line updated: Target textWidth and textHeight: ${handDrawnElements.line.target.textWidth}, ${handDrawnElements.line.target.textHeight}`);
+                }
+            }
+        } else {
+            // If it's a new word, spawn it with the data from the wordCloud object
+            const spawnX = targetX;
+            const spawnY = targetY;
 
-                // Color combinations for random selection
-                const colorCombinations = [
-                    { textColor: '#F0EDE4', backgroundColor: '#826694' },
-                    { textColor: '#684C62', backgroundColor: '#826694' },
-                    { textColor: '#F0EDE4', backgroundColor: '#B65A8B' },
-                    { textColor: '#E4B60C', backgroundColor: '#B65A8B' },
-                    { textColor: '#4D334F', backgroundColor: '#B3BB00' },
-                    { textColor: '#ACA847', backgroundColor: '#B3BB00' },
-                    { textColor: '#F0EDE4', backgroundColor: '#DF2551' },
-                    { textColor: '#E4B60C', backgroundColor: '#DF2551' },
-                    { textColor: '#B04126', backgroundColor: '#E4B60C' },
-                    { textColor: '#F0EDE4', backgroundColor: '#B04126' }
-                ];
+            const bodyPadding = 0;
+            const bodyWidth = data.info.fillTextWidth + bodyPadding * 2;
+            const bodyHeight = data.info.fillTextHeight + bodyPadding * 2;
 
-                // Pick a random color combination
-                const wordText = data.text || 'Missing Text';
-                const randomColorCombo = getRandomItem(colorCombinations);  // Randomly pick one of the color combinations
-                const fontColor = randomColorCombo.textColor;
-                const backgroundColor = randomColorCombo.backgroundColor;
+            const body = Bodies.rectangle(spawnX, spawnY, bodyWidth, bodyHeight, {
+                mass,
+                frictionAir: 0.1,
+                inertia: rotation ? Infinity : 0, // Prevent rotation if rotation is false
+                collisionFilter: {
+                    group: -1 // Disable collisions for this body initially
+                }
+            });
 
-                const fontFamily = data.fontFamily || 'Arial';
+            if (!rotation) {
+                Body.setAngle(body, 0);
+                Body.setAngularVelocity(body, 0);
+            }
 
-                // Store the new word with all relevant properties
-                wordBodies[wordId] = {
+            World.add(world, body);
+
+            // Color combinations for random selection
+            const colorCombinations = [
+                { textColor: '#F0EDE4', backgroundColor: '#826694' },
+                // { textColor: '#684C62', backgroundColor: '#826694' },
+                { textColor: '#F0EDE4', backgroundColor: '#B65A8B' },
+                // { textColor: '#E4B60C', backgroundColor: '#B65A8B' },
+                { textColor: '#4D334F', backgroundColor: '#B3BB00' },
+                // { textColor: '#ACA847', backgroundColor: '#B3BB00' },
+                { textColor: '#F0EDE4', backgroundColor: '#DF2551' },
+                // { textColor: '#E4B60C', backgroundColor: '#DF2551' },
+                { textColor: '#B04126', backgroundColor: '#E4B60C' },
+                { textColor: '#F0EDE4', backgroundColor: '#B04126' }
+            ];
+
+            const wordText = data.text || 'Missing Text';
+            const randomColorCombo = getRandomItem(colorCombinations);
+            const fontColor = randomColorCombo.textColor;
+            const backgroundColor = randomColorCombo.backgroundColor;
+
+            const fontFamily = data.fontFamily || 'Arial';
+
+            // Check for baseline characters
+            let handDrawnElements = null;
+            if (/[pqgjy]/.test(wordText)) {
+                // n% chance of adding hand-drawn elements
+                const chance = Math.random() * 100;
+                if (chance < 100) { // 20% chance
+                    const lineWeight = data.info.paddedHeight/25;
+                    const handDrawnLineData = generateHandDrawnLineData(data.info.fillTextWidth, data.info.fillTextHeight, data.offsetX, margin, data.info, lineWeight);
+                    const handDrawnCircleData = generateHandDrawnCircleData(data.info.fillTextWidth, data.info.fillTextHeight, data.offsetX, margin, data.info, lineWeight);
+
+                    // Store the hand-drawn elements data
+                    handDrawnElements = {
+                        line: handDrawnLineData,
+                        circle: handDrawnCircleData
+                    };
+                }
+            }
+
+            // Store the new word with all relevant properties, including hand-drawn elements if applicable
+            wordBodies[wordId] = {
                     body,
                     data: {
                         size: fontSize,
@@ -236,24 +302,33 @@
                         info: {
                             fillTextWidth: data.info.fillTextWidth,
                             fillTextHeight: data.info.fillTextHeight,
-                            currentOffsetX: data.offsetX, // Initialize current offset
-                            currentOffsetY: data.offsetY,
-                            targetOffsetX: data.offsetX, // Set the target offset
-                            targetOffsetY: data.offsetY,
-                            paddedWidth: data.info.paddedWidth,
+                            currentFillTextWidth: data.info.fillTextWidth, // New: current width for animation
+                            targetFillTextWidth: data.info.fillTextWidth,  // New: target width
+                            currentFillTextHeight: data.info.fillTextHeight, // New: current height for animation
+                            targetFillTextHeight: data.info.fillTextHeight,  // New: target height
                             paddedHeight: data.info.paddedHeight,
+                            currentPaddedHeight: data.info.paddedHeight,  // New: current padded height for animation
+                            targetPaddedHeight: data.info.paddedHeight,   // New: target padded height
+                            currentOffsetX: data.offsetX,
+                            currentOffsetY: data.offsetY,
+                            targetOffsetX: data.offsetX,
+                            targetOffsetY: data.offsetY,
                             paddingWidth: data.info.paddingWidth,
                             paddingHeight: data.info.paddingHeight
-                        }
+                        },
+                        handDrawnElements
                     },
-                    start: { x: spawnX, y: spawnY }, // Initial start position is the target position
-                    target: { x: targetX, y: targetY } // Target position without offset
+                    start: { x: spawnX, y: spawnY },
+                    target: { x: targetX, y: targetY }
                 };
 
-                console.log(`Spawning new word: ${wordText}, at (${spawnX}, ${spawnY}), target size: ${fontSize}`);
+
+                // //console.log(Spawning new word: ${wordText}, at (${spawnX}, ${spawnY}), target size: ${fontSize});
             }
         });
     }
+
+
 
 
 
@@ -304,94 +379,193 @@
                 data.info.currentOffsetY = data.info.targetOffsetY;
             }
 
-            // Recalculate text width and height based on the updated current size
-            const textWidth = data.info.fillTextWidth * (data.currentSize / data.targetSize);
-            const textHeight = data.info.fillTextHeight * (data.currentSize / data.targetSize);
+            // Smoothly animate the dimensions
+            data.info.currentFillTextWidth = lerp(data.info.currentFillTextWidth, data.info.targetFillTextWidth, scalingSpeed);
+            data.info.currentFillTextHeight = lerp(data.info.currentFillTextHeight, data.info.targetFillTextHeight, scalingSpeed);
 
-            // Update the body's visual bounds
-            body.bounds.max.x = body.bounds.min.x + textWidth - margin * 2;
-            body.bounds.max.y = body.bounds.min.y + textHeight - margin * 2;
-        });
-    }
+            // Lock dimensions once close to their targets
+            if (Math.abs(data.info.currentFillTextWidth - data.info.targetFillTextWidth) < 0.01) {
+                data.info.currentFillTextWidth = data.info.targetFillTextWidth;
+            }
+            if (Math.abs(data.info.currentFillTextHeight - data.info.targetFillTextHeight) < 0.01) {
+                data.info.currentFillTextHeight = data.info.targetFillTextHeight;
+            }
+            // Handle hand-drawn elements (circle and line) animation separately
+        if (data.handDrawnElements) {
+            const handDrawnElements = data.handDrawnElements;
+
+            // Handle Circle Scaling
+            if (handDrawnElements.circle) {
+                const circleData = handDrawnElements.circle;
+
+                // Smoothly scale the current size to the target size using lerp
+                circleData.current.textWidth = lerp(circleData.current.textWidth, circleData.target.textWidth, scalingSpeed);
+                circleData.current.textHeight = lerp(circleData.current.textHeight, circleData.target.textHeight, scalingSpeed);
+                circleData.current.lineWeight = lerp(circleData.current.lineWeight, circleData.target.lineWeight, scalingSpeed);
+
+                // Log the scaling progression
+                //console.log(`Circle scaling: Current textWidth: ${circleData.current.textWidth}, Target textWidth: ${circleData.target.textWidth}`);
+
+                // Lock the size once it's close to the target size
+                if (Math.abs(circleData.current.textWidth - circleData.target.textWidth) < 0.01) {
+                    circleData.current.textWidth = circleData.target.textWidth;
+                }
+                if (Math.abs(circleData.current.textHeight - circleData.target.textHeight) < 0.01) {
+                    circleData.current.textHeight = circleData.target.textHeight;
+                }
+                if (Math.abs(circleData.current.lineWeight - circleData.target.lineWeight) < 0.01) {
+                    circleData.current.lineWeight = circleData.target.lineWeight;
+                }
+            }
+
+            // Handle Line Scaling
+            // if (handDrawnElements.line) {
+            //     const lineData = handDrawnElements.line;
+
+            //     // Smoothly scale the current size to the target size using lerp
+            //     lineData.current.textWidth = lerp(lineData.current.textWidth, lineData.target.textWidth, scalingSpeed);
+            //     lineData.current.textHeight = lerp(lineData.current.textHeight, lineData.target.textHeight, scalingSpeed);
+            //     lineData.current.lineWeight = lerp(lineData.current.lineWeight, lineData.target.lineWeight, scalingSpeed);
+
+            //     // Log the scaling progression
+            //     //console.log(`Line scaling: Current textWidth: ${lineData.current.textWidth}, Target textWidth: ${lineData.target.textWidth}`);
+
+            //     // Lock the size once it's close to the target size
+            //     if (Math.abs(lineData.current.textWidth - lineData.target.textWidth) < 0.01) {
+            //         lineData.current.textWidth = lineData.target.textWidth;
+            //     }
+            //     if (Math.abs(lineData.current.textHeight - lineData.target.textHeight) < 0.01) {
+            //         lineData.current.textHeight = lineData.target.textHeight;
+            //     }
+            //     if (Math.abs(lineData.current.lineWeight - lineData.target.lineWeight) < 0.01) {
+            //         lineData.current.lineWeight = lineData.target.lineWeight;
+            //     }
+            // }
+        }
+    });
+}
+
+
+
+
+
+
+
+
 
 
     function drawWords() {
-        ctx.clearRect(0, 0, fullScreenCanvas.width, fullScreenCanvas.height);
+    ctx.clearRect(0, 0, fullScreenCanvas.width, fullScreenCanvas.height);
 
-        const sortedWordBodies = Object.entries(wordBodies).sort(([, a], [, b]) => b.data.currentSize - a.data.currentSize);
+    const sortedWordBodies = Object.entries(wordBodies).sort(([, a], [, b]) => b.data.currentSize - a.data.currentSize);
 
-        sortedWordBodies.forEach(([id, { body, data }]) => {
-            const { position: { x: bodyX, y: bodyY }, angle } = body;
-            const { string, currentSize, style, info } = data;
+    sortedWordBodies.forEach(([id, { body, data }]) => {
+        const { position: { x: bodyX, y: bodyY }, angle } = body;
+        const { string, currentSize, style, info, handDrawnElements } = data;
 
-            if (!string || !style || !info) return;
+        if (!string || !style || !info) return;
 
-            // Scale the text and offsets based on the current size (not the initial data.size)
-            const textWidth = info.fillTextWidth * (currentSize / data.targetSize);
-            const textHeight = info.fillTextHeight * (currentSize / data.targetSize);
-            const offsetX = info.currentOffsetX;
-            const offsetY = info.currentOffsetY;
+        ctx.save();
+        ctx.translate(bodyX, bodyY);
 
-            ctx.save();
-            ctx.translate(bodyX, bodyY);
+        if (rotation && angle !== 0) {
+            ctx.rotate(angle);
+        }
 
-            if (rotation && angle !== 0) {
-                ctx.rotate(angle);
-            }
+        const scaleFactor = currentSize / data.targetSize;  // The same scaling logic you use for text and rect
 
-            // Draw the background rectangle (adjusted for the margin)
-            const rectX = -textWidth / 2;
-            const rectY = -textHeight / 2;
-            ctx.fillStyle = style.backgroundColor;
-            ctx.fillRect(rectX, rectY, textWidth - margin * 2, textHeight - margin * 2);
+        const textWidth = info.fillTextWidth * scaleFactor;
+        const textHeight = info.fillTextHeight * scaleFactor;
+        const offsetX = info.currentOffsetX;
+        const offsetY = info.currentOffsetY;
 
-            // find the actual width of the text with the current font and font size
-            ctx.font = `${Math.round(currentSize)}px ${style.fontFamily}`;
-            const textMeasure = ctx.measureText(string);
-            const textWidthActual = textMeasure.width;
+        // Draw the background rectangle (as before)
+        const rectX = -textWidth / 2;
+        const rectY = -textHeight / 2;
+        ctx.fillStyle = style.backgroundColor;
+        ctx.fillRect(rectX, rectY, textWidth - margin * 2, textHeight - margin * 2);
 
-            // Set up the clipping region inside the background rectangle
-            ctx.beginPath();
-            ctx.rect(rectX, rectY, textWidth - margin * 2, textHeight - margin * 2);
-            ctx.clip();
-            drawHandDrawnCircle(ctx, textWidth, textHeight, offsetX, margin, info)
-            // draw a line under the text to show the actual width, padd it dynamically based on the font size
-            drawHandDrawnLine(ctx, textWidth, textWidthActual, textHeight, offsetX, margin, info)
-            ctx.globalAlpha = 1;
-            // turn off the blending mode
-            ctx.globalCompositeOperation = 'source-over';
-            // Draw the word with the offsets applied (only visible inside the clipped area)
-            ctx.fillStyle = style.color;
-            ctx.font = `${Math.round(currentSize)}px ${style.fontFamily}`;
-            ctx.fillText(string, -textWidth / 2 + offsetX, -textHeight / 2 + offsetY);
+        
+        // dont show the text outside the bounds of the rectangle
+          // Create a clipping region for the rectangle
+          ctx.beginPath();
+        ctx.rect(rectX, rectY, textWidth - margin * 2, textHeight - margin * 2);
+        ctx.clip(); // Apply the clipping region to limit drawing inside the rect
 
-            ctx.restore(); // Restore the canvas state (remove the clipping region)
-        });
+        
+
+        // Draw the circle based on the current size
+        if (handDrawnElements?.circle) {
+            drawHandDrawnCircle(ctx, handDrawnElements.circle, scaleFactor);
+        }
+        // put alpha back to 1 and turn off the blending mode
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
+
+        // ctx.filter = 'blur(0px)';  // Change the '5px' to adjust blur intensity
+
+
+        // Draw the text (as before)
+        ctx.fillStyle = style.color;
+        ctx.font = `${Math.round(currentSize)}px ${style.fontFamily}`;
+        ctx.fillText(string, -textWidth / 2 + offsetX, -textHeight / 2 + offsetY);
+        ctx.filter = 'none';
+
+        ctx.restore();
+    });
+}
+
+function drawHandDrawnCircle(ctx, circleData, scaleFactor) {
+    const { points, strokeStyle, globalAlpha, lineWidth } = circleData;
+
+    // Log to see if the size is being updated properly
+    //console.log(`Drawing circle with current size: ${circleData.currentSize}, target size: ${circleData.targetSize}`);
+
+    ctx.strokeStyle = strokeStyle;
+    ctx.globalAlpha = globalAlpha;
+    ctx.lineCap = 'round';
+
+    // Make sure lineWidth scales with `currentSize`
+    ctx.lineWidth = lineWidth *.8;
+
+    ctx.beginPath();
+
+    // Ensure `points` scale correctly based on `currentSize`
+    const circleRadius = circleData.current.textWidth / 2; // Adjust this calculation if needed
+    //console.log(`Circle radius being used: ${circleRadius}`);
+
+    ctx.moveTo(points[0].x , points[0].y );
+
+    for (let i = 1; i < points.length; i++) {
+        const prevPoint = { x: points[i - 1].x , y: points[i - 1].y  };
+        const currentPoint = { x: points[i].x , y: points[i].y  };
+
+        const midPointX = (prevPoint.x + currentPoint.x) / 2;
+        const midPointY = (prevPoint.y + currentPoint.y) / 2;
+
+        ctx.quadraticCurveTo(prevPoint.x, prevPoint.y, midPointX, midPointY);
     }
 
-    function drawHandDrawnCircle(ctx, textWidth, textHeight, offsetX, margin, info) {
-    ctx.strokeStyle = 'gray'; // Stroke color
-    // make the line opacity .3
-    ctx.globalAlpha = .4;
-    // Set stroke properties (round ends)
-    ctx.lineCap = 'round'; // Round line ends
+    ctx.stroke();
+}
 
-    ctx.lineWidth = info.paddedHeight / 25; // Line width based on text height
 
-    // add a subtract blending mode to match the color of the background
-    ctx.globalCompositeOperation = 'multiply';
 
-    // Function to add randomness (jitter) for hand-drawn effect
+
+function generateHandDrawnCircleData(textWidth, textHeight, offsetX, margin, info, lineWeight) {
+    const jitterAmount = 5;
+    const radiusVariationAmount = 3;
+    const overshootVariation = 5;
+
+    // Functions for jitter and radius variation
     function getJitter(amount) {
-        return (Math.random() - .5) * amount;
+        return (Math.random() - 0.5) * amount;
     }
 
-    // Function to add variability to the radius
     function getRadiusVariation(radius, variationAmount) {
         return radius + getJitter(variationAmount);
     }
 
-    // Function to rotate a point (x, y) by an angle theta around the origin
     function rotatePoint(x, y, theta) {
         const cosTheta = Math.cos(theta);
         const sinTheta = Math.sin(theta);
@@ -401,15 +575,14 @@
         };
     }
 
-    // Calculate the center and radius of the circle
+    // Define the base radius based on text size
     const centerX = 0 - margin;
     const centerY = 0 - margin;
-    const baseRadiusX = textWidth / 2.1 - margin * 2;
-    const baseRadiusY = textHeight / 2.1 - margin * 2;
+    const baseRadiusX = textWidth / 2.4 //- margin * 2;
+    const baseRadiusY = textHeight / 2.4 //- margin * 2;
 
     const numPoints = 12;
     const angleStep = (Math.PI * 2) / numPoints;
-    const overshootFactor = 1 //+ (Math.random() * 0.005 + 0.002);
     const randomStartAngle = Math.random() * Math.PI * 6;
     const randomTilt = (Math.random() * 7) * (Math.PI / 180);
 
@@ -417,79 +590,94 @@
 
     for (let i = 0; i < numPoints; i++) {
         const angle = i * angleStep + randomStartAngle;
-        const radiusX = getRadiusVariation(baseRadiusX, 3);
-        const radiusY = getRadiusVariation(baseRadiusY, 3);
+        const radiusX = getRadiusVariation(baseRadiusX, radiusVariationAmount);
+        const radiusY = getRadiusVariation(baseRadiusY, radiusVariationAmount);
 
-        let x = centerX + Math.cos(angle) * (radiusX + getJitter(5));
-        let y = centerY + Math.sin(angle) * (radiusY + getJitter(7));
+        let x = centerX + Math.cos(angle) * (radiusX + getJitter(jitterAmount));
+        let y = centerY + Math.sin(angle) * (radiusY + getJitter(jitterAmount));
 
         const rotatedPoint = rotatePoint(x, y, randomTilt);
-        x = rotatedPoint.x;
-        y = rotatedPoint.y;
-
-        points.push({ x, y });
+        points.push({ x: rotatedPoint.x, y: rotatedPoint.y });
     }
 
+    // Close the circle
     points.push({ x: points[0].x, y: points[0].y });
 
-    const overshootAngle = (numPoints + 1) * angleStep * overshootFactor + randomStartAngle;
-    const overshootRadiusX = getRadiusVariation(baseRadiusX, 5);
-    const overshootRadiusY = getRadiusVariation(baseRadiusY, 5);
+    // Adding overshoot point to give a more hand-drawn look
+    const overshootAngle = (numPoints + 1) * angleStep + randomStartAngle;
+    const overshootRadiusX = getRadiusVariation(baseRadiusX, overshootVariation);
+    const overshootRadiusY = getRadiusVariation(baseRadiusY, overshootVariation);
 
     let overshootX = centerX + Math.cos(overshootAngle) * (overshootRadiusX + getJitter(1));
     let overshootY = centerY + Math.sin(overshootAngle) * (overshootRadiusY + getJitter(2));
 
     const rotatedOvershoot = rotatePoint(overshootX, overshootY, randomTilt);
-    overshootX = rotatedOvershoot.x;
-    overshootY = rotatedOvershoot.y;
+    points.push({ x: rotatedOvershoot.x, y: rotatedOvershoot.y });
 
-    points.push({ x: overshootX, y: overshootY });
+    // Return the object with current and target values for textWidth, textHeight, and lineWeight
+    return {
+        points,
+        strokeStyle: 'gray',
+        globalAlpha: 0.4,
+        baseRadiusX, // Store the base radius for scaling in the draw function
+        baseRadiusY,
+        current: {
+            textWidth: textWidth,      // Initialize with current textWidth
+            textHeight: textHeight,    // Initialize with current textHeight
+            lineWeight: lineWeight     // Initialize with the current lineWeight
+        },
+        target: {
+            textWidth: textWidth,      // Set the target textWidth (could be updated later)
+            textHeight: textHeight,    // Set the target textHeight (could be updated later)
+            lineWeight: lineWeight     // Set the target lineWeight (could be updated later)
+        }
+    };
+}
+
+
+
+
+function drawHandDrawnCircle(ctx, circleData, scaleFactor) {
+    const { points, strokeStyle, globalAlpha, baseRadiusX, baseRadiusY, current, target } = circleData;
+
+    // Calculate the dynamic radius based on the current width and height
+    const radiusX =  (current.textWidth / 2.1 - margin * 2)*scaleFactor; // Scale radiusX using current vs target
+    const radiusY =  (current.textHeight / 2.2 - margin * 2)*scaleFactor; // Scale radiusY using current vs target
+
+    // Log for debugging
+    //console.log(`Drawing circle with current textWidth: ${current.textWidth}, target textWidth: ${target.textWidth}, radiusX: ${radiusX}, radiusY: ${radiusY}`);
+
+    // Set stroke styles for the hand-drawn effect
+    ctx.strokeStyle = strokeStyle;
+    ctx.globalAlpha = globalAlpha;
+    ctx.lineCap = 'round';
+
+    // Scale the line width dynamically based on the current line weight
+    ctx.lineWidth = current.lineWeight * scaleFactor;
 
     ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
 
-    // Function to calculate distance between two points
-    function getDistance(x1, y1, x2, y2) {
-        return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-    }
+    // Scale the circle points based on the dynamically calculated radius
+    ctx.moveTo(points[0].x * (radiusX / baseRadiusX), points[0].y * (radiusY / baseRadiusY));
 
-    // Total path length accumulator
-    let totalDistance = 0;
-    const maxLineWidth = 5; // Max thickness
-    const minLineWidth = 1; // Min thickness
-
-    // store the values for the first point in an array
-    const firstPoint = points[0];
-
-    // Draw the curve with variable line width
     for (let i = 1; i < points.length; i++) {
-
-        // if this is the second to last point, draw a line to the first point
-        
-        const prevPoint = points[i - 1];
-        const currentPoint = points[i];
+        const prevPoint = { 
+            x: points[i - 1].x * (radiusX / baseRadiusX), 
+            y: points[i - 1].y * (radiusY / baseRadiusY)
+        };
+        const currentPoint = { 
+            x: points[i].x * (radiusX / baseRadiusX), 
+            y: points[i].y * (radiusY / baseRadiusY)
+        };
 
         const midPointX = (prevPoint.x + currentPoint.x) / 2;
         const midPointY = (prevPoint.y + currentPoint.y) / 2;
 
-        // Calculate distance between previous and current points
-        const distance = getDistance(prevPoint.x, prevPoint.y, currentPoint.x, currentPoint.y);
-
-        // Add distance to total
-        totalDistance += distance;
-
-        // Vary the line width smoothly between minLineWidth and maxLineWidth based on distance traveled
-        const relativeDistance = totalDistance / (textWidth + textHeight); // Normalize by overall size
-        //ctx.lineWidth = minLineWidth + (maxLineWidth - minLineWidth) * relativeDistance;
-
-        // Draw the curve segment with the calculated line width
+        // Draw a smooth quadratic curve between the points
         ctx.quadraticCurveTo(prevPoint.x, prevPoint.y, midPointX, midPointY);
-
-        // draw a circle at each point
     }
 
     ctx.stroke();
-    debugger
 }
 
 
@@ -498,84 +686,46 @@
 
 
 
-function drawHandDrawnLine(ctx, textWidth, textWidthActual, textHeight, offsetX, margin, info) {
-    // Calculate start and end positions
-    const startX = -textWidth / 2 + offsetX;
-    const endX = textWidthActual / 2 * 0.9;
-    const y = textHeight / 2 - (margin * 2 + info.paddingHeight * 1.4);
-    
-    // Set the stroke style, blending mode, opacity, and line width
-    ctx.strokeStyle = '#e5b70b';
-    ctx.globalAlpha = 1; // Line opacity
-    ctx.lineCap = 'round'; // Round line ends
-    ctx.lineWidth = info.paddedHeight / 25; // Dynamic scaling based on text height
-    //turn of the blending mode
-    ctx.globalCompositeOperation = 'source-over';
-    //ctx.globalCompositeOperation = 'multiply'; // Blending mode for the handmade effect
 
-    // Function to add randomness (jitter) for hand-drawn effect
-    function getJitter(amount) {
-        return (Math.random() - 0.5) * amount;
-    }
+    function generateHandDrawnLineData(textWidth, textHeight, offsetX, margin, info) {
+        const startX = -textWidth / 2 + offsetX;
+        // text width actual is the width of the text without the padding
+        const textWidthActual = info.fillTextWidth - info.paddingWidth * 2;
+        const endX = textWidthActual / 2 * 0.9;
+        const y = textHeight / 2 - (margin * 2 + info.paddingHeight * 1.4);
 
-    // Apply tilt to start and end points
-    const tiltAngle = (Math.random() * -5) * (Math.PI / 180); // Random tilt angle (up to 10 degrees)
-    const rotatePoint = (x, y, angle) => ({
-        x: x * Math.cos(angle) - y * Math.sin(angle),
-        y: x * Math.sin(angle) + y * Math.cos(angle),
-    });
-
-    // Draw the hand-drawn line in segments with Bezier curves
-    ctx.beginPath();
-    
-    const segmentLength = (endX - startX) / 5; // Break the line into 5 segments
-    let currentX = startX;
-
-    // Apply jitter and tilt to the start point
-    let startPoint = rotatePoint(currentX + getJitter(3), y + getJitter(3), tiltAngle);
-    ctx.moveTo(startPoint.x, startPoint.y);
-
-    // Create intermediate points with jitter
-    for (let i = 1; i <= 4; i++) {
-        currentX += segmentLength;
-        let controlPoint = rotatePoint(currentX + getJitter(5), y + getJitter(5), tiltAngle);
-        let nextPoint = rotatePoint(currentX + segmentLength / 2 + getJitter(5), y + getJitter(5), tiltAngle);
-
-        // Use quadratic Bezier curve to create smooth transitions between points
-        ctx.quadraticCurveTo(controlPoint.x, controlPoint.y, nextPoint.x, nextPoint.y);
-    }
-
-    // Apply jitter and tilt to the end point
-    let endPoint = rotatePoint(endX + getJitter(3), y + getJitter(3), tiltAngle);
-    ctx.lineTo(endPoint.x, endPoint.y);
-    
-    ctx.stroke();
-}
-
-
-
-
-
-
-    // on keydown event add 1 to the weight factor
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'ArrowUp') {
-            console.log('ArrowUp');
-            weightFactor += 10;
-            console.log('Weight factor:', weightFactor);
-            updateWordCloud();
+        function getJitter(amount) {
+            return (Math.random() - 0.5) * amount;
         }
 
-        if (event.key === 'ArrowDown') {
-            console.log('ArrowDown');
-            weightFactor -= 10;
-            console.log('Weight factor:', weightFactor);
-            updateWordCloud();
+        const tiltAngle = (Math.random() * -5) * (Math.PI / 180); // Random tilt angle (up to 10 degrees)
+        const segmentLength = (endX - startX) / 5; // Break the line into 5 segments
+        const points = [];
+
+        let currentX = startX;
+        for (let i = 0; i <= 5; i++) {
+            currentX = startX + i * segmentLength; // Calculate X for each point
+            const jitterX = getJitter(5);
+            const jitterY = getJitter(5);
+
+            // Apply tilt and jitter to each point
+            points.push({
+                x: currentX + jitterX,
+                y: y + jitterY
+            });
         }
-    });
+
+        return {
+            points,
+            strokeStyle: '#e5b70b',
+            globalAlpha: 1,
+            lineWidth: info.paddedHeight / 25, // Match original dynamic scaling
+            tiltAngle // Store the random tilt for use in drawing
+        };
+    }
 
 
-
+    
 
     // Matter.js engine update loop
     function gameLoop() {
@@ -586,7 +736,42 @@ function drawHandDrawnLine(ctx, textWidth, textWidthActual, textHeight, offsetX,
 
     gameLoop(); // Start the game loop
 
+    function dynamicWeightFactor() {
+    // Calculate the total word count
+    const totalWordCount = Array.from(wordsMap.values()).reduce((acc, word) => acc + word.count, 0);
+
+    // Base weight factor calculation (logarithmic)
+    const baseWeight = 100;
+    let weightFactor = baseWeight / (1 + Math.log(totalWordCount + 1)); // The +1 avoids log(0)
+
+    // Calculate additional weight for words with count > 1
+    const extraWeight = Array.from(wordsMap.values()).reduce((acc, word) => {
+        if (word.count > 1) {
+            const wordImpact = Math.log(word.count*.85);  // Logarithmic impact based on count
+            return acc + wordImpact;  // Accumulate the impact of words with count > 1
+        }
+        return acc;
+    }, 0);
+
+    // Subtract a portion of the extra weight from the original weight factor
+    weightFactor -= extraWeight * 0.1;  // Scale the subtraction to keep it moderate
+
+    // Prevent the weight factor from dropping below 1
+    weightFactor = Math.max(1, weightFactor);
+
+    // Log results for debugging
+    console.log('Total word count:', totalWordCount);
+    console.log('Extra weight from words with count > 1:', extraWeight);
+    console.log('Final weight factor:', weightFactor);
+
+    return weightFactor;
+}
+
+
+
     function updateWordCloud() {
+        // Update the weight factor based on the total word count
+        weightFactor = dynamicWeightFactor();
         const wordList = mapWordsToArray();
 
         WordCloud(document.getElementById('wordCloudCanvas'), {
@@ -618,14 +803,29 @@ function drawHandDrawnLine(ctx, textWidth, textWidthActual, textHeight, offsetX,
         // Initial fetch to populate the stored words
         fetchWords();
 
+        socket.on('remove_word', function (word) {
+            if (wordsMap.has(word.id)) {
+                // Remove the word from the wordsMap and wordIds
+                wordsMap.delete(word.id);
+                wordIds.delete(word.id);
+
+                // Remove the Matter.js body from the world
+                if (wordBodies[word.id]) {
+                    World.remove(world, wordBodies[word.id].body);
+                    delete wordBodies[word.id]; // Remove the word from the wordBodies object
+                }
+
+                // Update the word cloud to reflect changes
+                //updateWordCloud();
+            }
+        });
+
+
         socket.on('new_word', function (word) {
-            console.log('New word:', word);
-
-
-
+            // //console.log('New word:', word);
             // Handle the new word as before
             if (wordsMap.has(word.id)) {
-                console.log('Word already exists:', word);
+                // //console.log('Word already exists:', word);
                 let wordObj = wordsMap.get(word.id);
                 wordObj.count = word.count;
                 // update the word count in the word map
@@ -634,7 +834,7 @@ function drawHandDrawnLine(ctx, textWidth, textWidthActual, textHeight, offsetX,
 
                 // updateWordPhysics(word.id); // Update position/mass/etc.
             } else {
-                console.log('New word:', word);
+                // //console.log('New word:', word);
                 wordQueue.push(word);
                 wordIds.add(word.id);
                 createWordObject(word);
@@ -643,12 +843,14 @@ function drawHandDrawnLine(ctx, textWidth, textWidthActual, textHeight, offsetX,
 
     }
 
+
+
     // Fetch words from the backend
     function fetchWords() {
         fetch(`http://localhost:5000/strings?page=${page}&per_page=${perPage}`)
             .then(response => response.json())
             .then(data => {
-                console.log("Fetched data:", data);
+                // //console.log("Fetched data:", data);
                 data.data.forEach(word => {
                     if (!wordIds.has(word.id)) {
                         createWordObject(word);

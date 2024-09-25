@@ -97,7 +97,7 @@ def calculate_approval(approved_true_count, approved_false_count, total_count, m
         return False
 
     # Define the confidence threshold (e.g., 70% approval needed)
-    confidence_threshold = 0.7
+    confidence_threshold = 0.6
     approval_ratio = approved_true_count / total_count
 
     # Debugging: Log the ratio
@@ -300,7 +300,7 @@ def store_string():
             human_approved = None
 
             if not dev:
-                for _ in range(5):
+                for _ in range(3):
                     is_appropriate = check_content_appropriateness(
                         lower_string)
                     if is_appropriate:
@@ -491,4 +491,4 @@ if __name__ == '__main__':
     print("QR Code Moderator Frontend:")
     print("################################")
     qr_to_terminal(f"http://{local_ip}:5000/moderator")
-    socketio.run(app, debug=True, host='0.0.0.0')
+    socketio.run(app, debug=True, host='0.0.0.0', allow_unsafe_werkzeug=True)

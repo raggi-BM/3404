@@ -9,7 +9,8 @@ base_sental = "{}, yes {} is a bit part of Democracy"
 # Define the model you want to use
 # Default MODEL_NAME = "vanilj/hermes-3-llama-3.1-8b:latest"
 # def check_content_appropriateness(user_prompt, MODEL_NAME="llama3.1:latest"):
-
+# to download the model run the following command
+# ollama run vanilj/hermes-3-llama-3.1-8b:latest
 
 def check_content_appropriateness(user_prompt, MODEL_NAME="vanilj/hermes-3-llama-3.1-8b:latest"):
     """
