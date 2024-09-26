@@ -1110,10 +1110,10 @@ if (!window.clearImmediate) {
         return
       }
 
-    
+
 
       var pixelData = ctx.getImageData(boxX, boxY, boxWidth, boxHeight); // Snapshot of the box area
-      
+
 
 
       var pixels = pixelData.data;
@@ -1158,7 +1158,7 @@ if (!window.clearImmediate) {
 
           // Continue checking at least the first 3 rows, or stop if no green pixel found after that
           if (rowsChecked >= minRowsToCheck && !greenPixelFound) {
-            
+
             break; // Stop checking once we find a row with no green pixels after 3 rows
           }
         }
@@ -1168,10 +1168,10 @@ if (!window.clearImmediate) {
 
       // debugger
       // Step 5: Calculate the offset based on the lowest green pixel position
-      var offsetY = info.paddedHeight - lowestGreenPixelY - (margin * 2 + paddingHeight); // Offset from the bottom of the box
+      var offsetY = info.paddedHeight - lowestGreenPixelY - ( paddingHeight*1.05 + margin*2); // Offset from the bottom of the box
 
       // Step 6: Draw **two separate buffer zones (squares)** that are 20px taller than the original box
-      var bufferSize = info.paddedWidth/8; // Set the size of each buffer square (100px wide)
+      var bufferSize = info.paddedWidth / 8; // Set the size of each buffer square (100px wide)
       // make the bufferSize the closest whole number
       bufferSize = Math.floor(bufferSize);
 
@@ -1179,7 +1179,7 @@ if (!window.clearImmediate) {
       var bufferTopOffset = boxHeight + 3; // Shift the buffer up by 10px
 
       // Adjust the overlap by 40px
-      var overlap = info.paddedWidth/16;
+      var overlap = info.paddedWidth / 16;
 
       // Left buffer square (placed left of the bounding box)
       var leftBufferX = boxX - bufferSize + overlap; // Overlap the box by 40px
@@ -1196,75 +1196,75 @@ if (!window.clearImmediate) {
       function checkBufferZone(startX, startY, width, height, isLeftBuffer) {
         var bufferData = ctx.getImageData(startX, startY, width, height); // Buffer zone area
         var bufferPixels = bufferData.data; // RGBA values
-    
+
         var foundGreenPixel = false; // Flag to track if a green pixel is found
         var farthestGreenPixelX = isLeftBuffer ? width : 0; // Initialize as farthest possible, depending on the buffer side
         var halfWidth = Math.floor(bufferSize); // Calculate half of the buffer width
-    
+
         // Define the scan direction based on left or right buffer
         var startColumn = isLeftBuffer ? width - 1 : 0; // Start from right for left buffer, left for right buffer
         var step = isLeftBuffer ? -1 : 1; // Step direction: left buffer moves left, right buffer moves right
-    
+
         var hasReachedHalf = false; // Flag to check if we've passed half of the buffer
-    
+
         // Scan columns one by one
         for (var x = startColumn; (isLeftBuffer ? x >= 0 : x < width); x += step) {
-            var isGreenPixelInColumn = false;
-    
-            // Check every row in this column for green pixels
-            for (var y = 0; y < height; y++) {
-                var pixelIndex = (y * width + x) * 4; // Calculate the RGBA index for this pixel
-    
-                var red = bufferPixels[pixelIndex];
-                var green = bufferPixels[pixelIndex + 1];
-                var blue = bufferPixels[pixelIndex + 2];
-                var alpha = bufferPixels[pixelIndex + 3];
-    
-                // Log current pixel color
-                //console.log('Pixel color at X:', x, 'Y:', y, 'R:', red, 'G:', green, 'B:', blue, 'A:', alpha);
-    
-                // Check if this pixel is non-zero (indicating color)
-                if (!(red === 0 && green === 0 && blue === 0 && alpha === 0)) {
-                    //console.log('Non-zero pixel found at X:', x, 'Y:', y);
-                    isGreenPixelInColumn = true;
-                    farthestGreenPixelX = isLeftBuffer ? (width - x) : x; // Track the farthest green pixel
-                    foundGreenPixel = true; // Mark that we found at least one green pixel
-                    break; // No need to check other rows if we found a green pixel in this column
-                }
+          var isGreenPixelInColumn = false;
+
+          // Check every row in this column for green pixels
+          for (var y = 0; y < height; y++) {
+            var pixelIndex = (y * width + x) * 4; // Calculate the RGBA index for this pixel
+
+            var red = bufferPixels[pixelIndex];
+            var green = bufferPixels[pixelIndex + 1];
+            var blue = bufferPixels[pixelIndex + 2];
+            var alpha = bufferPixels[pixelIndex + 3];
+
+            //log current pixel color
+            console.log('Pixel color at X:', x, 'Y:', y, 'R:', red, 'G:', green, 'B:', blue, 'A:', alpha);
+
+            // Check if this pixel is green
+            if (!(red === 0 && green === 0 && blue === 0 && alpha === 0)) {
+              console.log('Green pixel found at X:', x, 'Y:', y);
+              isGreenPixelInColumn = true;
+              farthestGreenPixelX = isLeftBuffer ? (width - x) : x; // Track the farthest green pixel
+              foundGreenPixel = true; // Mark that we found at least one green pixel
+
+              // Render the current column as red for visualization
+              ctx.fillStyle = 'rgba(255, 0, 0, 0.5)'; // Red with transparency
+              ctx.fillRect(startX + x, startY, 1, height); // Render one column wide (x position)
+              break; // No need to check other rows if we found a green pixel in this column
             }
-    
-            // Only render the current column as red if a green pixel was found in it
-            if (isGreenPixelInColumn) {
-                ctx.fillStyle = 'rgba(255, 0, 0, 0.5)'; // Red with transparency
-                ctx.fillRect(startX + x, startY, 1, height); // Render one column wide (x position)
-            }
-    
-            // Check if we've passed half the buffer width
-            if (Math.abs(startColumn - x) >= halfWidth) {
-                hasReachedHalf = true;
-            }
-    
-            // If we've reached half of the buffer zone, and no green pixel was found in the current column, stop
-            if (hasReachedHalf && !isGreenPixelInColumn && foundGreenPixel) {
-                console.log('Farthest green pixel in left buffer:', farthestGreenPixelX);
-                debugger;
-                break;
-            }
-    
-            // If we've passed half and haven't found any green pixels at all, stop
-            if (hasReachedHalf && !foundGreenPixel) {
-                console.log('No green pixels found in left buffer');
-                debugger;
-                break;
-            }
+          }
+
+
+
+          // Check if we've passed half the buffer width
+          if (Math.abs(startColumn - x) >= halfWidth) {
+            hasReachedHalf = true;
+          }
+
+          // If we've reached half of the buffer zone, and no green pixel was found in the current column, stop
+          if (hasReachedHalf && !isGreenPixelInColumn && foundGreenPixel) {
+            console.log('Farthest green pixel in left buffer:', farthestGreenPixelX);
+            debugger
+            break;
+          }
+
+          // If we've passed half and haven't found any green pixels at all, stop
+          if (hasReachedHalf && !foundGreenPixel) {
+            console.log('No green pixels found in left buffer');
+            debugger
+            break;
+          }
         }
         debugger
         // Return the last farthest green pixel, even if none was found
         return isLeftBuffer ? farthestGreenPixelX : -farthestGreenPixelX;
-    }
-    
-    
-    
+      }
+
+
+
 
 
 
@@ -1289,8 +1289,8 @@ if (!window.clearImmediate) {
         farthestGreenPixelSum = farthestGreenPixelLeft;
       }
 
-
-
+      console.log('Farthest green pixel sum:', farthestGreenPixelSum);
+      debugger
 
       // Step 8: Adjust horizontal position based on buffer zones
       var horizontalOffsetX = paddingWidth + farthestGreenPixelSum;
@@ -1332,8 +1332,8 @@ if (!window.clearImmediate) {
       ctx.restore();
 
       // clear the canvas
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);  
-    
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
       // textPosX = (textX + horizontalOffsetX) * mu;
       // textPosY = (textY + offsetY) * mu;
       // rectPosx = gx * settings.gridSize;

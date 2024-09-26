@@ -1,89 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Grid</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f7f7f7;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(5, 150px);
-            grid-gap: 20px;
-            padding: 20px;
-        }
-        .grid-item {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: #ffffff;
-            font-size: 16px;
-            border-radius: 10px;
-            padding: 10px;
-            text-align: center;
-            height: 100px;
-        }
-        .grid-item-number {
-            font-size: 14px;
-            color: #000000;
-            margin-bottom: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Speech Recognition Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    #textInput {
+      font-size: 1.5rem;
+      padding: 10px;
+      width: 300px;
+      border: 2px solid #333;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      outline: none;
+    }
+    #micButton {
+      font-size: 1.5rem;
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      outline: none;
+      transition: background-color 0.3s ease;
+    }
+    #micButton:hover {
+      background-color: #0056b3;
+    }
+    #micButton:active {
+      background-color: #003f7f;
+    }
+  </style>
 </head>
 <body>
 
-<div class="grid-container">
-    <div class="grid-item" style="color: #F0EDE4; background-color: #826694;">
-        <div class="grid-item-number">1</div>
-        Word 1
-    </div>
-    <div class="grid-item" style="color: #684C62; background-color: #826694;">
-        <div class="grid-item-number">2</div>
-        Word 2
-    </div>
-    <div class="grid-item" style="color: #F0EDE4; background-color: #B65A8B;">
-        <div class="grid-item-number">3</div>
-        Word 3
-    </div>
-    <div class="grid-item" style="color: #E4B60C; background-color: #B65A8B;">
-        <div class="grid-item-number">4</div>
-        Word 4
-    </div>
-    <div class="grid-item" style="color: #4D334F; background-color: #B3BB00;">
-        <div class="grid-item-number">5</div>
-        Word 5
-    </div>
-    <div class="grid-item" style="color: #ACA847; background-color: #B3BB00;">
-        <div class="grid-item-number">6</div>
-        Word 6
-    </div>
-    <div class="grid-item" style="color: #F0EDE4; background-color: #DF2551;">
-        <div class="grid-item-number">7</div>
-        Word 7
-    </div>
-    <div class="grid-item" style="color: #E4B60C; background-color: #DF2551;">
-        <div class="grid-item-number">8</div>
-        Word 8
-    </div>
-    <div class="grid-item" style="color: #B04126; background-color: #E4B60C;">
-        <div class="grid-item-number">9</div>
-        Word 9
-    </div>
-    <div class="grid-item" style="color: #F0EDE4; background-color: #B04126;">
-        <div class="grid-item-number">10</div>
-        Word 10
-    </div>
-</div>
+  <input type="text" id="textInput" placeholder="Say a word..." />
+  <button id="micButton">🎤</button>
+
+  <script>
+    const micButton = document.getElementById('micButton');
+    const textInput = document.getElementById('textInput');
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.lang = 'en-US';
+
+      micButton.addEventListener('click', () => {
+        recognition.start();
+      });
+
+      recognition.onresult = (event) => {
+        const word = event.results[0][0].transcript.trim();
+        textInput.value = word;
+        console.log(`Detected word: ${word}`);
+      };
+
+      recognition.onspeechend = () => {
+        recognition.stop();
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+      };
+    } else {
+      console.log('Speech recognition not supported in this browser.');
+    }
+  </script>
 
 </body>
 </html>

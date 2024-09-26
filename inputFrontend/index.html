@@ -4,80 +4,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MFAGarnett Font Demo</title>
+    <title>Art & Democracy Interactive Input</title>
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/css/index.css"> -->
     <style>
-     @font-face {
-    font-family: 'MFAGarnett';
-    src: url("{{ url_for('static', filename='fonts/MFAGarnett-Light.eot') }}");
-    src: url("{{ url_for('static', filename='fonts/MFAGarnett-Light.eot') }}?#iefix") format("embedded-opentype"),
-         url("{{ url_for('static', filename='fonts/MFAGarnett-Light.woff2') }}") format("woff2"),
-         url("{{ url_for('static', filename='fonts/MFAGarnett-Light.woff') }}") format("woff");
-    font-style: normal;
-    font-weight: 300;
-    /* Light */
-}
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Light.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Light.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Light.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Light.woff') }}") format("woff");
+            font-style: normal;
+            font-weight: 300;
+            /* Light */
+        }
 
-@font-face {
-    font-family: 'MFAGarnett';
-    src: url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.eot') }}");
-    src: url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.eot') }}?#iefix") format("embedded-opentype"),
-         url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.woff2') }}") format("woff2"),
-         url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.woff') }}") format("woff");
-    font-style: italic;
-    font-weight: 300;
-    /* Light Italic */
-}
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.woff') }}") format("woff");
+            font-style: italic;
+            font-weight: 300;
+            /* Light Italic */
+        }
 
-@font-face {
-    font-family: 'MFAGarnett';
-    src: url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.eot') }}");
-    src: url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.eot') }}?#iefix") format("embedded-opentype"),
-         url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.woff2') }}") format("woff2"),
-         url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.woff') }}") format("woff");
-    font-style: normal;
-    font-weight: 400;
-    /* Regular */
-}
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.woff') }}") format("woff");
+            font-style: normal;
+            font-weight: 400;
+            /* Regular */
+        }
 
-@font-face {
-    font-family: 'MFAGarnett';
-    src: url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.eot') }}");
-    src: url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.eot') }}?#iefix") format("embedded-opentype"),
-         url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.woff2') }}") format("woff2"),
-         url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.woff') }}") format("woff");
-    font-style: italic;
-    font-weight: 400;
-    /* Regular Italic */
-}
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.woff') }}") format("woff");
+            font-style: italic;
+            font-weight: 400;
+            /* Regular Italic */
+        }
 
-@font-face {
-    font-family: 'MFAGarnett';
-    src: url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.eot') }}");
-    src: url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.eot') }}?#iefix") format("embedded-opentype"),
-         url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.woff2') }}") format("woff2"),
-         url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.woff') }}") format("woff");
-    font-style: normal;
-    font-weight: 600;
-    /* Semibold */
-}
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.woff') }}") format("woff");
+            font-style: normal;
+            font-weight: 600;
+            /* Semibold */
+        }
 
-@font-face {
-    font-family: 'MFAGarnett';
-    src: url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.eot') }}");
-    src: url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.eot') }}?#iefix") format("embedded-opentype"),
-         url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.woff2') }}") format("woff2"),
-         url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.woff') }}") format("woff");
-    font-style: italic;
-    font-weight: 600;
-    /* Semibold Italic */
-}
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.woff') }}") format("woff");
+            font-style: italic;
+            font-weight: 600;
+            /* Semibold Italic */
+        }
 
 
 
         /* KEYBOARD THEME */
         .hg-theme-default {
-            background-color: #cecece;
+            background-color: #8d8d8d;
             border-radius: 5px;
             box-sizing: border-box;
             font-family: 'MFAGarnett', sans-serif;
@@ -88,6 +88,29 @@
             -moz-user-select: none;
             user-select: none;
             width: 90%;
+        }
+
+        .hg-theme-default .hg-button[data-skbtn="{lock}"],
+        .hg-theme-default .hg-button[data-skbtn="{}"] {
+            pointer-events: none;
+            /* Prevent clicks */
+            color: #ffffff;
+            /* Set text color to white */
+        }
+
+        .hg-theme-default .hg-button[data-skbtn="{mic}"] {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            /* Adjust background color */
+        }
+
+
+        svg {
+            width: auto;
+            /* Adjust the size of the SVG */
+            height: 4vw;
         }
 
         .hg-theme-default .hg-button span {
@@ -146,7 +169,7 @@
         }
 
         .hg-theme-default .hg-button.hg-activeButton {
-            background: #efefef;
+            background: #dadada;
         }
 
         .hg-theme-default.hg-layout-numeric .hg-button {
@@ -260,11 +283,15 @@
 
         body {
             font-family: 'MFAGarnett', sans-serif;
+            /* make it bold */
+            font-weight: 600;
             line-height: 1.6;
+            /* font size */
+            font-size: 1vw;
             margin: 0;
             padding: 0;
             background-color: #ffffff;
-            color: #cecece;
+            color: #8d8d8d;
             overflow: hidden;
         }
 
@@ -357,11 +384,8 @@
         }
 
         .voteButton:active {
-            background-color: #dfded5;
-            /* transform: scale(0.998); */
-            /* Slightly shrink for a pressed effect */
-            /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
-            /* Reduced shadow for a pressed state */
+            background-color: #a5c700;
+
         }
 
         .input:focus {
@@ -479,13 +503,26 @@
             /* Allow this container to grow and fill the remaining space */
         }
 
-        .loading {
+        .iconImage {
+            width: 10vw;
+            margin-bottom: 2.5vw;
+            /* center it in the container */
+        }
+
+        .loading,
+        .error {
             margin-top: 10vw;
             font-family: 'MFAGarnett', sans-serif;
-            font-size: 3vw;
+            font-size: 1.8vw;
             font-weight: 600;
             color: black;
             text-align: center;
+            /* Center the contents of the div */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+
         }
 
         /* sucsessState */
@@ -576,6 +613,43 @@
             transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.2s ease;
             padding: 0.5vw 1.2vw 0.5vw 1.2vw;
         }
+
+        .arrowHead {
+
+            color: #5d3d54;
+        }
+
+        .mic-indicator {
+            position: absolute;
+            top: 17.5vw;
+            left: 2.5%;
+            display: block;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            /* Adjust other styles as needed */
+        }
+
+        .mic-indicator.active {
+            opacity: 1;
+        }
+
+        .circle {
+            width: 60px;
+            height: 30px;
+            border-radius: 25px;
+            background-color: #a5c700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #000000;
+        }
+
+        /* New class to handle mic button animation */
+        .mic-active {
+            background-color: #a5c700 !important;
+            color: rgb(0, 0, 0) !important;
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
     </style>
 </head>
 
@@ -583,17 +657,42 @@
 
     <div class="header">
         <div class="upper">
-            <div class="swash">► <span class="first-word">What</span> one word comes to mind when</div>
+            <div class="swash"><span class="arrowHead">► </span><span class="first-word">What's</span> the first word
+                that comes</div>
         </div>
         <div class="lower">
-            <div class="swash" style="padding-left: 1rem;">you think of <span class="first-word">Democracy</span>?</div>
+            <div class="swash" style="padding-left: 1rem;">to mind when you think of <span
+                    class="first-word">Democracy</span>?</div>
         </div>
     </div>
 
     <div class="stateContainer">
         <div class="inputState">
+            <div class="mic-indicator">
+                <div class="circle">
+                    <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                        xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100"
+                        style="enable-background:new 0 0 100 100;" xml:space="preserve">
+                        <style type="text/css">
+                            .st1 {
+                                fill: #000000;
+                            }
+                        </style>
+                        <g>
+                            <path class="st1" d="M50.16,55.66c-3.71,0-6.73-3.02-6.73-6.73V37.13c0-3.71,3.02-6.73,6.73-6.73s6.73,3.02,6.73,6.73v11.79
+                            C56.89,52.64,53.87,55.66,50.16,55.66z M50.16,34.2c-1.62,0-2.93,1.32-2.93,2.93v11.79c0,1.62,1.32,2.93,2.93,2.93
+                            s2.93-1.32,2.93-2.93V37.13C53.09,35.52,51.78,34.2,50.16,34.2z" />
+                        </g>
+                        <path class="st1"
+                            d="M58.6,65.96h-6.54v-3.31c6.43-0.93,11.39-6.46,11.39-13.14c0-1.05-0.85-1.9-1.9-1.9s-1.9,0.85-1.9,1.9
+                          c0,5.23-4.26,9.49-9.49,9.49s-9.49-4.26-9.49-9.49c0-1.05-0.85-1.9-1.9-1.9s-1.9,0.85-1.9,1.9c0,6.68,4.96,12.21,11.39,13.14v3.31
+                          h-6.54c-1.05,0-1.9,0.85-1.9,1.9s0.85,1.9,1.9,1.9H58.6c1.05,0,1.9-0.85,1.9-1.9S59.65,65.96,58.6,65.96z" />
+                    </svg>
+                </div>
+            </div>
+
             <div class="inputContainer">
-                <input class="input" placeholder="Share your thoughts!" />
+                <input class="input" id="input" placeholder="Share your thoughts!" />
                 <button class="voteButton">Cast a Vote</button>
 
                 <!-- <img class="logo" src="logo/logo.svg" alt="Logo"> -->
@@ -604,9 +703,11 @@
 
         </div>
         <div class="LoadingState">
-            <div class="loadingContaner">
+            <div class="loadingContainer">
                 <div class="loading">
-                    Counting the votes<br>...
+                    <img class="iconImage" src="{{ url_for('static', filename='inputFrontend/assets/loading.png') }}"
+                        alt="Loading">
+                    Tallying the votes...
                 </div>
             </div>
             <div class="animatedFooter">
@@ -628,7 +729,8 @@
         </div>
         <div class="successState">
             <div class="resultContainer">
-                <image class="resultImage" src="{{ url_for('static', filename='inputFrontend/src/suc.png') }}" alt="Result">
+                <image class="resultImage" src="{{ url_for('static', filename='inputFrontend/src/suc.png') }}"
+                    alt="Result">
                     <div class="arrow">
                         ↑
                     </div>
@@ -642,16 +744,13 @@
 
         </div>
         <div class="errorState">
-            <div class="resultContainer">
+            <!-- <div class="resultContainer"> -->
+                <div>
 
-
-                <div class="resultText
-                    ">
-
-                    Oops! Something went wrong.
-                </div>
-                <div class="subText">
-                    Please try again later.
+                <div class="error">
+                    <img class="iconImage" src="{{ url_for('static', filename='inputFrontend/assets/retry.png') }}"
+                        alt="Error">
+                        Please try a different word.
                 </div>
             </div>
 
@@ -667,13 +766,66 @@
         </div>
     </div>
 
+    <script>
+        // After the keyboard is initialized, inject the SVG into the mic button
+        window.addEventListener('DOMContentLoaded', () => {
+
+
+            const micButton = document.querySelector('.hg-button[data-skbtn="{mic}"]');
+
+
+            if (micButton) {
+                micButton.innerHTML = `
+          <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+            viewBox="0 0 100 100" style="enable-background:new 0 0 100 100;" xml:space="preserve">
+            <style type="text/css">
+              .st0{fill:#8E8D8D;}
+            </style>
+            <g>
+              <path class="st0" d="M50.16,55.66c-3.71,0-6.73-3.02-6.73-6.73V37.13c0-3.71,3.02-6.73,6.73-6.73s6.73,3.02,6.73,6.73v11.79
+                C56.89,52.64,53.87,55.66,50.16,55.66z M50.16,34.2c-1.62,0-2.93,1.32-2.93,2.93v11.79c0,1.62,1.32,2.93,2.93,2.93
+                s2.93-1.32,2.93-2.93V37.13C53.09,35.52,51.78,34.2,50.16,34.2z"/>
+            </g>
+            <path class="st0" d="M58.6,65.96h-6.54v-3.31c6.43-0.93,11.39-6.46,11.39-13.14c0-1.05-0.85-1.9-1.9-1.9s-1.9,0.85-1.9,1.9
+              c0,5.23-4.26,9.49-9.49,9.49s-9.49-4.26-9.49-9.49c0-1.05-0.85-1.9-1.9-1.9s-1.9,0.85-1.9,1.9c0,6.68,4.96,12.21,11.39,13.14v3.31
+              h-6.54c-1.05,0-1.9,0.85-1.9,1.9s0.85,1.9,1.9,1.9H58.6c1.05,0,1.9-0.85,1.9-1.9S59.65,65.96,58.6,65.96z"/>
+          </svg>
+        `;
+            }
+
+
+
+            // // Add event listener for mouse down (or touchstart) to activate the button
+            // micButton.addEventListener('mousedown', () => {
+            //     micButton.classList.add('hg-activeButton');
+            // });
+
+            // // Add event listener for mouse up (or touchend) to deactivate the button
+            // micButton.addEventListener('mouseup', () => {
+            //     micButton.classList.remove('hg-activeButton');
+            // });
+
+            // // Optional: Handle touch devices
+            // micButton.addEventListener('touchstart', () => {
+            //     micButton.classList.add('hg-activeButton');
+            // });
+
+            // micButton.addEventListener('touchend', () => {
+            //     micButton.classList.remove('hg-activeButton');
+            // });
+
+
+
+        });
+    </script>
+
 
     <script src="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/index.js"></script>
     <script src="/dynamic-static/inputFrontend/src/animate.js"></script>
     <script src="/dynamic-static/inputFrontend/src/stateManager.js"></script>
     <script src="/dynamic-static/inputFrontend/src/submit.js"></script>
     <script src="/dynamic-static/inputFrontend/src/getMod.js"></script>
-    
+
 </body>
 
 </html>

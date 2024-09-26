@@ -245,8 +245,10 @@ def store_string():
 
         # Skip moderation if dev mode is active
         if not dev:
+
             # Check for prohibited words before running any moderation
-            if any(prohibited_word in lower_string for prohibited_word in prohibited_words):
+            # if any(prohibited_word in lower_string for prohibited_word in prohibited_words):
+            if lower_string in prohibited_words:
                 return jsonify({
                     "message": "String contains prohibited words and was not stored",
                     "string": lower_string,
