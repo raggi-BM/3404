@@ -201,6 +201,8 @@ def get_all_strings():
                 final_approved = human_approved  # Use manual approval if set
             else:
                 # Apply the same logic as the SQL query in the strings route
+                # log the string
+
                 final_approved = calculate_approval(
                     approved_true_count, approved_false_count, count)
 
@@ -227,6 +229,8 @@ def get_all_strings():
 # Load the list of prohibited words
 with open(os.path.join(os.path.dirname(__file__), 'words.json'), 'r') as f:
     prohibited_words = set(json.load(f))
+    # Convert all words to lowercase for case-insensitive comparison
+    prohibited_words = {word.lower() for word in prohibited_words}
 
 
 @app.route('/store_string', methods=['POST'])
@@ -239,6 +243,8 @@ def store_string():
         return jsonify({"error": "String is required"}), 400
 
     lower_string = string.lower()  # Convert string to lowercase
+
+    print(f"Received string: {lower_string}")
 
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
@@ -270,6 +276,8 @@ def store_string():
             human_approved = row[5]  # Master manual approval status
 
             if not dev:
+                # log the string
+                print(f"Moderating string: {lower_string}")
                 # Run moderation 5 times
                 for _ in range(5):
                     is_appropriate = check_content_appropriateness(
@@ -302,7 +310,7 @@ def store_string():
             human_approved = None
 
             if not dev:
-                for _ in range(3):
+                for _ in range(5):
                     is_appropriate = check_content_appropriateness(
                         lower_string)
                     if is_appropriate:
