@@ -430,6 +430,14 @@ def serve_input_frontend():
         content = file.read()
     return render_template_string(content, ip_address=ip_address)
 
+
+@app.route('/font')
+def serve_input_font():
+    ip_address = get_local_ip()
+    with open('inputFrontend/fonttest.html', 'r') as file:
+        content = file.read()
+    return render_template_string(content, ip_address=ip_address)
+
 # Serve .js and .css files with dynamic placeholder replacement
 
 

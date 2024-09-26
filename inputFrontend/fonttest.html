@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Font Selector</title>
+    <style>
+       @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Light.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Light.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Light.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Light.woff') }}") format("woff");
+            font-style: normal;
+            font-weight: 300;
+            /* Light */
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-LightItalic.woff') }}") format("woff");
+            font-style: italic;
+            font-weight: 300;
+            /* Light Italic */
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Regular.woff') }}") format("woff");
+            font-style: normal;
+            font-weight: 400;
+            /* Regular */
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-RegularItalic.woff') }}") format("woff");
+            font-style: italic;
+            font-weight: 400;
+            /* Regular Italic */
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-Semibold.woff') }}") format("woff");
+            font-style: normal;
+            font-weight: 600;
+            /* Semibold */
+        }
+
+        @font-face {
+            font-family: 'MFAGarnett';
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.eot') }}");
+            src: url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.eot') }}?#iefix") format("embedded-opentype"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.woff2') }}") format("woff2"),
+            url("{{ url_for('static', filename='fonts/MFAGarnett-SemiboldItalic.woff') }}") format("woff");
+            font-style: italic;
+            font-weight: 600;
+            /* Semibold Italic */
+        }
+
+        body {
+            font-family: 'MFAGarnett', sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .font-selector {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        select {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .characters {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            text-align: center;
+            font-size: 32px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Font Selector</h1>
+    
+    <div class="font-selector">
+        <label for="font-select">Select a font: </label>
+        <select id="font-select">
+            <option value="MFAGarnett-Light">MFAGarnett-Light</option>
+            <option value="MFAGarnett-LightItalic">MFAGarnett-LightItalic</option>
+            <option value="MFAGarnett-Regular">MFAGarnett-Regular</option>
+            <option value="MFAGarnett-RegularItalic">MFAGarnett-RegularItalic</option>
+            <option value="MFAGarnett-Semibold">MFAGarnett-Semibold</option>
+            <option value="MFAGarnett-SemiboldItalic">MFAGarnett-SemiboldItalic</option>
+        </select>
+    </div>
+
+    <div class="characters" id="character-display">
+        ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>
+        abcdefghijklmnopqrstuvwxyz<br>
+        0123456789<br>
+        !@#$%^&*()_+[]{}|;:'‘’",.<>?/~`-=
+    </div>
+    
+
+    <script>
+        const fontSelect = document.getElementById('font-select');
+        const characterDisplay = document.getElementById('character-display');
+    
+        fontSelect.addEventListener('change', function() {
+            // Apply the selected font to the font family
+            const selectedFont = this.value;
+            characterDisplay.style.fontFamily = selectedFont.includes('Italic') ? 'MFAGarnett' : 'MFAGarnett';
+            
+            // Set the font style to 'italic' or 'normal' based on the selected option
+            if (selectedFont.includes('Italic')) {
+                characterDisplay.style.fontStyle = 'italic';
+            } else {
+                characterDisplay.style.fontStyle = 'normal';
+            }
+    
+            // Adjust the font weight based on the selected option
+            if (selectedFont.includes('Semibold')) {
+                characterDisplay.style.fontWeight = '600';
+            } else if (selectedFont.includes('Light')) {
+                characterDisplay.style.fontWeight = '300';
+            } else {
+                characterDisplay.style.fontWeight = '400';  // Regular weight
+            }
+        });
+    
+        // Set initial font
+        const initialFont = fontSelect.value;
+        characterDisplay.style.fontFamily = initialFont.includes('Italic') ? 'MFAGarnett' : 'MFAGarnett';
+        characterDisplay.style.fontWeight = initialFont.includes('Semibold') ? '600' : initialFont.includes('Light') ? '300' : '400';
+        characterDisplay.style.fontStyle = initialFont.includes('Italic') ? 'italic' : 'normal';
+    </script>
+    
+</body>
+</html>
