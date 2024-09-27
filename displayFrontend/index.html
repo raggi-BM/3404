@@ -72,15 +72,15 @@
         if (event.clientX !== lastMousePosition.x || event.clientY !== lastMousePosition.y) {
             // Update the last mouse position
             lastMousePosition = { x: event.clientX, y: event.clientY };
-            //console.log('Mouse moved!');
-            //console.log('Mouse position:', lastMousePosition);
+            ////console.log('Mouse moved!');
+            ////console.log('Mouse position:', lastMousePosition);
 
             clearTimeout(inactivityTimer); // Clear the previous timer
             showCursor(); // Show the cursor if the user moves the mouse
 
             // Set a new timeout to hide the cursor after 2000ms of inactivity
             inactivityTimer = setTimeout(hideCursor, 2000);
-            //console.log('Cursor hidden after 2000ms of inactivity');
+            ////console.log('Cursor hidden after 2000ms of inactivity');
         }
     }
 
@@ -147,7 +147,7 @@
                     const otherBounds = otherBody.bounds;
                     if (Matter.Bounds.overlaps(shrunkBounds, otherBounds)) {
                         // Handle the custom collision logic
-                        //console.log(`Collision detected between ${body.label} and ${otherBody.label}`);
+                        ////console.log(`Collision detected between ${body.label} and ${otherBody.label}`);
                     }
                 }
             });
@@ -177,7 +177,7 @@
     var proStatus = new Proxy({ done: false }, {
         set: function (target, prop, value) {
             if (prop === 'done' && value === true) {
-                // ////console.log('Word cloud generation is done!');
+                // //////console.log('Word cloud generation is done!');
                 onWordCloudComplete();
             }
             target[prop] = value; // Store the new value
@@ -221,6 +221,9 @@
 
 
     function onWordCloudComplete() {
+        startFadeIn(); // This will initiate the fade-in, followed by hold and fade-out
+
+
         var wordCloudData = getWordCloudData(); // Assume this gives you the positions from WordCloud.js
 
 
@@ -229,8 +232,8 @@
             // get the area of the paddedheight and paddedwidth
             const area = data.info.paddedHeight * data.info.paddedWidth;
             // the smaller the area the higher the randomness
-            const randomnessFactor = 1 / area * 18;
-            console.log(randomnessFactor);
+            const randomnessFactor = 1 / area *2;
+            //console.log(randomnessFactor);
             ////debugger;
 
             const wordId = data.wordId; // Assuming `wordId` is included in `data`
@@ -292,7 +295,7 @@
                             textHeight: data.info.fillTextHeight,
                             lineWeight: data.info.paddedHeight / 25
                         };
-                        ////console.log(`Circle updated: Target textWidth and textHeight: ${handDrawnElements.circle.target.textWidth}, ${handDrawnElements.circle.target.textHeight}`);
+                        //////console.log(`Circle updated: Target textWidth and textHeight: ${handDrawnElements.circle.target.textWidth}, ${handDrawnElements.circle.target.textHeight}`);
                     }
 
                     if (handDrawnElements.line) {
@@ -306,7 +309,7 @@
                             textHeight: data.info.fillTextHeight,
                             lineWidth: data.info.paddedHeight / 25
                         };
-                        ////console.log(`Line updated: Target textWidth and textHeight: ${handDrawnElements.line.target.textWidth}, ${handDrawnElements.line.target.textHeight}`);
+                        //////console.log(`Line updated: Target textWidth and textHeight: ${handDrawnElements.line.target.textWidth}, ${handDrawnElements.line.target.textHeight}`);
                     }
                 }
             } else {
@@ -367,7 +370,7 @@
                         // Now, we have a 50/50 chance between the line and the circle
                         const innerChance = Math.random() * 100;
                         if (innerChance < 50) {
-                            console.log('Hand-drawn line added');
+                            //console.log('Hand-drawn line added');
                             // 50% chance for the line
                             //debugger;
                             handDrawnElements = {
@@ -424,7 +427,7 @@
                 };
 
 
-                // ////console.log(Spawning new word: ${wordText}, at (${spawnX}, ${spawnY}), target size: ${fontSize});
+                // //////console.log(Spawning new word: ${wordText}, at (${spawnX}, ${spawnY}), target size: ${fontSize});
             }
         });
     }
@@ -537,8 +540,70 @@
     }
 
 
+let MasterOpacity = 1;
+let OpacityLowTrigger = false;
+let duration = 950; // Total fade duration in milliseconds
+let startTime; // Variable to store the start time of the animation
+let holdDuration = 35000; // How long to hold at fully faded in before fading out again
+let fadeComplete = false; // To track if fade-in is complete
+
+// 30 seconds after the last word is added, start fading out the words
+function fadeOutWords() {
+    setTimeout(() => {
+        if (fadeComplete) { // Ensure that fade-out happens only if fade-in completed
+            OpacityLowTrigger = true;
+            startTime = Date.now();  // Reset startTime for fade-out
+            WordFader();  // Trigger fade-out
+        }
+    }, holdDuration); // Wait for 'holdDuration' before starting the fade-out
+}
+
+// Ease-in-out quad function for smooth fading
+function easeInOutQuad(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
+function WordFader() {
+    let currentTime = Date.now();
+    let elapsed = currentTime - startTime;
+    let progress = Math.min(elapsed / duration, 1); // Clamp progress to 1
+
+    if (OpacityLowTrigger) {
+        // Fade out using easing function
+        MasterOpacity = 1 - easeInOutQuad(progress);
+
+        if (progress < 1) {
+            requestAnimationFrame(WordFader);
+        } else {
+            MasterOpacity = 0; // Ensure opacity is exactly 0 at the end
+            fadeComplete = false; // Reset fadeComplete after fade-out
+        }
+    } else {
+        // Fade in using easing function
+        MasterOpacity = easeInOutQuad(progress);
+
+        if (progress < 1) {
+            requestAnimationFrame(WordFader);
+        } else {
+            MasterOpacity = 1; // Ensure opacity is exactly 1 at the end
+            fadeComplete = true; // Mark that fade-in is complete
+            fadeOutWords(); // Now safely trigger fade-out after fade-in is complete
+        }
+    }
+
+    console.log(MasterOpacity); // Debugging
+}
+
+// Trigger the fade-in manually
+function startFadeIn() {
+    OpacityLowTrigger = false;
+    startTime = Date.now();  // Initialize startTime for fade-in
+    fadeComplete = false; // Reset this flag when starting a new fade-in
+    WordFader();  // Start fade-in
+}
 
 
+// 
 
 
 
@@ -583,7 +648,7 @@
             ctx.rect(rectX, rectY, textWidth - margin * 2, textHeight - margin * 2);
             ctx.clip(); // Apply the clipping region to limit drawing inside the rect
 
-
+            ctx.globalAlpha = MasterOpacity;
             // Draw the circle based on the current size
             if (handDrawnElements?.circle) {
                 drawHandDrawnCircle(ctx, handDrawnElements.circle, scaleFactor, style);
@@ -592,12 +657,12 @@
             // Draw the line based on the current size
             if (handDrawnElements?.line) {
                 //debugger;
-                console.log('Drawing hand-drawn line');
+                //console.log('Drawing hand-drawn line');
                 generateAndDrawHandDrawnLineWithSeed(ctx, handDrawnElements.line, info.fillTextHeight, info.fillTextWidth, offsetX, margin, info, scaleFactor, style);
             }
 
             // put alpha back to 1 and turn off the blending mode
-            ctx.globalAlpha = 1;
+            
             ctx.globalCompositeOperation = 'source-over';
 
             // ctx.filter = 'blur(0px)';  // Change the '5px' to adjust blur intensity
@@ -608,6 +673,8 @@
             ctx.font = `${Math.round(currentSize)}px ${style.fontFamily}`;
             ctx.fillText(string, -textWidth / 2 + offsetX, -textHeight / 2 + offsetY);
             ctx.filter = 'none';
+
+            ctx.globalAlpha = 1;
 
             ctx.restore();
         });
@@ -726,7 +793,7 @@
         const radiusY = (current.textHeight / 2.2 - margin * 2) * scaleFactor; // Scale radiusY using current vs target
 
         // Log for debugging
-        ////console.log(`Drawing circle with current textWidth: ${current.textWidth}, target textWidth: ${target.textWidth}, radiusX: ${radiusX}, radiusY: ${radiusY}`);
+        //////console.log(`Drawing circle with current textWidth: ${current.textWidth}, target textWidth: ${target.textWidth}, radiusX: ${radiusX}, radiusY: ${radiusY}`);
 
         // Set stroke styles for the hand-drawn effect
         //ctx.strokeStyle = strokeStyle;
@@ -819,7 +886,7 @@ function seededRandom(seed) {
 
 
 function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, offsetX, margin, info, scaleFactor, style) {
-    console.log('Generating and drawing hand-drawn line with seed:', seed);
+    //console.log('Generating and drawing hand-drawn line with seed:', seed);
 
    
 
@@ -829,7 +896,7 @@ function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, 
     const endX = textWidthActual / 2 * 0.9;
     const y = (info.fillTextHeight * scaleFactor )/ 2 - (info.paddingHeight*scaleFactor) * 2 ;  // Revert back to original logic
 
-    console.log(`startX: ${startX}, endX: ${endX}, y: ${y}`);
+    //console.log(`startX: ${startX}, endX: ${endX}, y: ${y}`);
 
     const segmentLength = (endX - startX) / 5;
     const points = [];
@@ -847,7 +914,7 @@ function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, 
             x: currentX + jitterX,
             y: y + jitterY
         });
-        console.log(`Point ${i}: x=${currentX + jitterX}, y=${y + jitterY}`);
+        //console.log(`Point ${i}: x=${currentX + jitterX}, y=${y + jitterY}`);
     }
 
     // Set the stroke style and other properties for the line
@@ -863,7 +930,6 @@ function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, 
 
     // Set stroke styles
     ctx.strokeStyle = strokeStyle;
-    ctx.globalAlpha = globalAlpha;
     ctx.lineWidth = lineWidth;
 
     ctx.beginPath();
@@ -907,7 +973,7 @@ function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, 
         // Calculate additional weight for words with count > 1
         const extraWeight = Array.from(wordsMap.values()).reduce((acc, word) => {
             if (word.count > 1) {
-                const wordImpact = Math.log(word.count * .85);  // Logarithmic impact based on count
+                const wordImpact = Math.log(word.count * .65);  // Logarithmic impact based on count
                 return acc + wordImpact;  // Accumulate the impact of words with count > 1
             }
             return acc;
@@ -920,9 +986,9 @@ function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, 
         weightFactor = Math.max(1, weightFactor);
 
         // Log results for debugging
-        //console.log('Total word count:', totalWordCount);
-        //console.log('Extra weight from words with count > 1:', extraWeight);
-        //console.log('Final weight factor:', weightFactor);
+        ////console.log('Total word count:', totalWordCount);
+        ////console.log('Extra weight from words with count > 1:', extraWeight);
+        ////console.log('Final weight factor:', weightFactor);
 
         return weightFactor;
     }
@@ -993,10 +1059,10 @@ function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, 
 
 
         socket.on('new_word', function (word) {
-            // ////console.log('New word:', word);
+            // //////console.log('New word:', word);
             // Handle the new word as before
             if (wordsMap.has(word.id)) {
-                // ////console.log('Word already exists:', word);
+                // //////console.log('Word already exists:', word);
                 let wordObj = wordsMap.get(word.id);
                 wordObj.count = word.count;
                 // update the word count in the word map
@@ -1005,7 +1071,7 @@ function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, 
 
                 // updateWordPhysics(word.id); // Update position/mass/etc.
             } else {
-                // ////console.log('New word:', word);
+                // //////console.log('New word:', word);
                 wordQueue.push(word);
                 wordIds.add(word.id);
                 createWordObject(word);
@@ -1021,7 +1087,7 @@ function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, 
         fetch(`http://localhost:5000/strings?page=${page}&per_page=${perPage}`)
             .then(response => response.json())
             .then(data => {
-                // ////console.log("Fetched data:", data);
+                // //////console.log("Fetched data:", data);
                 data.data.forEach(word => {
                     if (!wordIds.has(word.id)) {
                         createWordObject(word);
