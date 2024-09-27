@@ -579,10 +579,9 @@
 
             // dont show the text outside the bounds of the rectangle
             // Create a clipping region for the rectangle
-            // ctx.beginPath();
-            // ctx.rect(rectX, rectY, textWidth - margin * 2, textHeight - margin * 2);
-            // ctx.clip(); // Apply the clipping region to limit drawing inside the rect
-
+            ctx.beginPath();
+            ctx.rect(rectX, rectY, textWidth - margin * 2, textHeight - margin * 2);
+            ctx.clip(); // Apply the clipping region to limit drawing inside the rect
 
 
             // Draw the circle based on the current size
