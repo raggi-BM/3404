@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Speech Recognition Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    #textInput {
+      font-size: 1.5rem;
+      padding: 10px;
+      width: 300px;
+      border: 2px solid #333;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      outline: none;
+    }
+    #micButton {
+      font-size: 1.5rem;
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      outline: none;
+      transition: background-color 0.3s ease;
+    }
+    #micButton:hover {
+      background-color: #0056b3;
+    }
+    #micButton:active {
+      background-color: #003f7f;
+    }
+  </style>
+</head>
+<body>
+
+  <input type="text" id="textInput" placeholder="Say a word..." />
+  <button id="micButton">🎤</button>
+
+  <script>
+    const micButton = document.getElementById('micButton');
+    const textInput = document.getElementById('textInput');
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.lang = 'en-US';
+
+      micButton.addEventListener('click', () => {
+        recognition.start();
+      });
+
+      recognition.onresult = (event) => {
+        const word = event.results[0][0].transcript.trim();
+        textInput.value = word;
+        console.log(`Detected word: ${word}`);
+      };
+
+      recognition.onspeechend = () => {
+        recognition.stop();
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+      };
+    } else {
+      console.log('Speech recognition not supported in this browser.');
+    }
+  </script>
+
+</body>
+</html>
