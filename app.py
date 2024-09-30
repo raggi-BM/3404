@@ -227,10 +227,15 @@ def get_all_strings():
 
 
 # Load the list of prohibited words
-with open(os.path.join(os.path.dirname(__file__), 'words.json'), 'r') as f:
+with open(os.path.join(os.path.dirname(__file__), 'moderator/words.json'), 'r') as f:
     prohibited_words = set(json.load(f))
     # Convert all words to lowercase for case-insensitive comparison
     prohibited_words = {word.lower() for word in prohibited_words}
+
+with open(os.path.join(os.path.dirname(__file__), 'moderator/approvedWords.json'), 'r') as f:
+    allowed_words = set(json.load(f))
+    # Convert all words to lowercase for case-insensitive comparison
+    allowed_words = {word.lower() for word in allowed_words}
 
 
 @app.route('/store_string', methods=['POST'])
@@ -249,107 +254,142 @@ def store_string():
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
 
-        # Skip moderation if dev mode is active
-        if not dev:
-
-            # Check for prohibited words before running any moderation
-            # if any(prohibited_word in lower_string for prohibited_word in prohibited_words):
-            if lower_string in prohibited_words:
-                return jsonify({
-                    "message": "String contains prohibited words and was not stored",
-                    "string": lower_string,
-                    "approved": False
-                }), 400
-
-        # Check if the string already exists in the database (use lowercase string for comparison)
-        cursor.execute(
-            'SELECT id, count, approved_true_count, approved_false_count, approved, human_approved FROM strings WHERE string = ?', (lower_string,))
-        row = cursor.fetchone()
-
-        if row:
-            # String exists, increment count and possibly skip moderation if dev flag is set
-            word_id = row[0]
-            new_count = row[1] + 1
-            approved_true_count = row[2]
-            approved_false_count = row[3]
-            ai_approved = row[4]  # AI-based approval status
-            human_approved = row[5]  # Master manual approval status
-
-            if not dev:
-                # log the string
-                print(f"Moderating string: {lower_string}")
-                # Run moderation 5 times
-                for _ in range(5):
-                    is_appropriate = check_content_appropriateness(
-                        lower_string)
-                    if is_appropriate:
-                        approved_true_count += 1
-                    else:
-                        approved_false_count += 1
-
-                # Update counts and recalculate AI approval
-                final_approved = calculate_approval(
-                    approved_true_count, approved_false_count, new_count)
-
-                # **New Logic**: Use human_approved as a master override
-                if human_approved is not None:  # If manually reviewed, use that decision
-                    final_approved = human_approved
-            else:
-                # If dev flag is set, automatically approve the string
-                final_approved = True
-
-            # Update the database
-            cursor.execute('UPDATE strings SET count = ?, approved_true_count = ?, approved_false_count = ?, approved = ?, human_approved = ? WHERE id = ?',
-                           (new_count, approved_true_count, approved_false_count, final_approved, human_approved, word_id))
-
-        else:
-            # String doesn't exist, initialize counts and possibly skip moderation if dev flag is set
+        # Check if the string is in the allowed words list and skip moderation if it is
+        if lower_string in allowed_words:
+            print(
+                f"String '{lower_string}' found in allowed words list, skipping AI moderation.")
+            final_approved = True
             approved_true_count = 0
             approved_false_count = 0
-            # Initialize human_approved as None for new strings
-            human_approved = None
+            new_count = 1
+            human_approved = True
 
-            if not dev:
-                for _ in range(5):
-                    is_appropriate = check_content_appropriateness(
-                        lower_string)
-                    if is_appropriate:
-                        approved_true_count += 1
-                    else:
-                        approved_false_count += 1
+            # Check if the string already exists in the database
+            cursor.execute(
+                'SELECT id, count FROM strings WHERE string = ?', (lower_string,))
+            row = cursor.fetchone()
 
-                new_count = 1
-
-                # Calculate approval using the custom function
-                final_approved = calculate_approval(
-                    approved_true_count, approved_false_count, new_count)
+            if row:
+                # String exists, increment count
+                word_id = row[0]
+                new_count = row[1] + 1
+                cursor.execute('UPDATE strings SET count = ?, approved = ? WHERE id = ?',
+                               (new_count, final_approved, word_id))
             else:
-                # If dev flag is set, automatically approve the string
-                final_approved = True
-                new_count = 1
+                # Insert new string
+                cursor.execute('INSERT INTO strings (string, approved, count, approved_true_count, approved_false_count, human_approved) VALUES (?, ?, ?, ?, ?, ?)',
+                               (lower_string, final_approved, new_count, approved_true_count, approved_false_count, human_approved))
+                cursor.execute('SELECT last_insert_rowid()')
+                word_id = cursor.fetchone()[0]
 
-            # Insert new string, assume no manual approval yet (human_approved = None)
-            cursor.execute('INSERT INTO strings (string, approved, count, approved_true_count, approved_false_count, human_approved) VALUES (?, ?, ?, ?, ?, ?)',
-                           (lower_string, final_approved, new_count, approved_true_count, approved_false_count, None))
-            cursor.execute('SELECT last_insert_rowid()')
-            word_id = cursor.fetchone()[0]
+            conn.commit()
 
-        conn.commit()
+            # Emit the string to the frontend
+            socketio.emit('new_word', {"id": word_id,
+                          "string": lower_string, "count": new_count})
 
-    # Emit the new/updated string to the display frontend **only if** AI approved it or dev mode is enabled
-    if final_approved:
-        socketio.emit('new_word', {"id": word_id,
-                      "string": lower_string, "count": new_count})
+        else:
+            # Proceed with the existing logic if the word is not in the allowed words list
 
-    # Emit all stored words to the moderator dashboard
-    cursor.execute('SELECT id, string, approved, count FROM strings')
-    all_strings = cursor.fetchall()
+            # Skip moderation if dev mode is active
+            if not dev:
+                # Check for prohibited words before running any moderation
+                if lower_string in prohibited_words:
+                    return jsonify({
+                        "message": "String contains prohibited words and was not stored",
+                        "string": lower_string,
+                        "approved": False
+                    }), 400
 
-    socketio.emit('all_words', [
-        {"id": row[0], "string": row[1],
-            "approved": bool(row[2]), "count": row[3]}
-        for row in all_strings
-    ])
+            # Check if the string already exists in the database (use lowercase string for comparison)
+            cursor.execute(
+                'SELECT id, count, approved_true_count, approved_false_count, approved, human_approved FROM strings WHERE string = ?', (lower_string,))
+            row = cursor.fetchone()
+
+            if row:
+                # String exists, increment count and possibly skip moderation if dev flag is set
+                word_id = row[0]
+                new_count = row[1] + 1
+                approved_true_count = row[2]
+                approved_false_count = row[3]
+                ai_approved = row[4]  # AI-based approval status
+                human_approved = row[5]  # Master manual approval status
+
+                if not dev:
+                    # log the string
+                    print(f"Moderating string: {lower_string}")
+                    # Run moderation 5 times
+                    for _ in range(5):
+                        is_appropriate = check_content_appropriateness(
+                            lower_string)
+                        if is_appropriate:
+                            approved_true_count += 1
+                        else:
+                            approved_false_count += 1
+
+                    # Update counts and recalculate AI approval
+                    final_approved = calculate_approval(
+                        approved_true_count, approved_false_count, new_count)
+
+                    # **New Logic**: Use human_approved as a master override
+                    if human_approved is not None:  # If manually reviewed, use that decision
+                        final_approved = human_approved
+                else:
+                    # If dev flag is set, automatically approve the string
+                    final_approved = True
+
+                # Update the database
+                cursor.execute('UPDATE strings SET count = ?, approved_true_count = ?, approved_false_count = ?, approved = ?, human_approved = ? WHERE id = ?',
+                               (new_count, approved_true_count, approved_false_count, final_approved, human_approved, word_id))
+
+            else:
+                # String doesn't exist, initialize counts and possibly skip moderation if dev flag is set
+                approved_true_count = 0
+                approved_false_count = 0
+                # Initialize human_approved as None for new strings
+                human_approved = None
+
+                if not dev:
+                    for _ in range(5):
+                        is_appropriate = check_content_appropriateness(
+                            lower_string)
+                        if is_appropriate:
+                            approved_true_count += 1
+                        else:
+                            approved_false_count += 1
+
+                    new_count = 1
+
+                    # Calculate approval using the custom function
+                    final_approved = calculate_approval(
+                        approved_true_count, approved_false_count, new_count)
+                else:
+                    # If dev flag is set, automatically approve the string
+                    final_approved = True
+                    new_count = 1
+
+                # Insert new string, assume no manual approval yet (human_approved = None)
+                cursor.execute('INSERT INTO strings (string, approved, count, approved_true_count, approved_false_count, human_approved) VALUES (?, ?, ?, ?, ?, ?)',
+                               (lower_string, final_approved, new_count, approved_true_count, approved_false_count, None))
+                cursor.execute('SELECT last_insert_rowid()')
+                word_id = cursor.fetchone()[0]
+
+            conn.commit()
+
+            # Emit the new/updated string to the display frontend **only if** AI approved it or dev mode is enabled
+            if final_approved:
+                socketio.emit('new_word', {"id": word_id,
+                              "string": lower_string, "count": new_count})
+
+        # Emit all stored words to the moderator dashboard
+        cursor.execute('SELECT id, string, approved, count FROM strings')
+        all_strings = cursor.fetchall()
+
+        socketio.emit('all_words', [
+            {"id": row[0], "string": row[1],
+                "approved": bool(row[2]), "count": row[3]}
+            for row in all_strings
+        ])
 
     return jsonify({
         "message": "String stored successfully",
@@ -361,6 +401,135 @@ def store_string():
         "manually_approved": human_approved,
         "dev_mode": dev  # Return whether dev mode was active
     }), 201
+
+# @app.route('/store_string', methods=['POST'])
+# def store_string():
+#     string = request.json.get('string')
+#     # Get 'dev' flag, default to False if not provided
+#     dev = request.json.get('dev', False)
+
+#     if not string:
+#         return jsonify({"error": "String is required"}), 400
+
+#     lower_string = string.lower()  # Convert string to lowercase
+
+#     print(f"Received string: {lower_string}")
+
+#     with sqlite3.connect('database.db') as conn:
+#         cursor = conn.cursor()
+
+#         # Skip moderation if dev mode is active
+#         if not dev:
+
+#             # Check for prohibited words before running any moderation
+#             # if any(prohibited_word in lower_string for prohibited_word in prohibited_words):
+#             if lower_string in prohibited_words:
+#                 return jsonify({
+#                     "message": "String contains prohibited words and was not stored",
+#                     "string": lower_string,
+#                     "approved": False
+#                 }), 400
+
+#         # Check if the string already exists in the database (use lowercase string for comparison)
+#         cursor.execute(
+#             'SELECT id, count, approved_true_count, approved_false_count, approved, human_approved FROM strings WHERE string = ?', (lower_string,))
+#         row = cursor.fetchone()
+
+#         if row:
+#             # String exists, increment count and possibly skip moderation if dev flag is set
+#             word_id = row[0]
+#             new_count = row[1] + 1
+#             approved_true_count = row[2]
+#             approved_false_count = row[3]
+#             ai_approved = row[4]  # AI-based approval status
+#             human_approved = row[5]  # Master manual approval status
+
+#             if not dev:
+#                 # log the string
+#                 print(f"Moderating string: {lower_string}")
+#                 # Run moderation 5 times
+#                 for _ in range(5):
+#                     is_appropriate = check_content_appropriateness(
+#                         lower_string)
+#                     if is_appropriate:
+#                         approved_true_count += 1
+#                     else:
+#                         approved_false_count += 1
+
+#                 # Update counts and recalculate AI approval
+#                 final_approved = calculate_approval(
+#                     approved_true_count, approved_false_count, new_count)
+
+#                 # **New Logic**: Use human_approved as a master override
+#                 if human_approved is not None:  # If manually reviewed, use that decision
+#                     final_approved = human_approved
+#             else:
+#                 # If dev flag is set, automatically approve the string
+#                 final_approved = True
+
+#             # Update the database
+#             cursor.execute('UPDATE strings SET count = ?, approved_true_count = ?, approved_false_count = ?, approved = ?, human_approved = ? WHERE id = ?',
+#                            (new_count, approved_true_count, approved_false_count, final_approved, human_approved, word_id))
+
+#         else:
+#             # String doesn't exist, initialize counts and possibly skip moderation if dev flag is set
+#             approved_true_count = 0
+#             approved_false_count = 0
+#             # Initialize human_approved as None for new strings
+#             human_approved = None
+
+#             if not dev:
+#                 for _ in range(5):
+#                     is_appropriate = check_content_appropriateness(
+#                         lower_string)
+#                     if is_appropriate:
+#                         approved_true_count += 1
+#                     else:
+#                         approved_false_count += 1
+
+#                 new_count = 1
+
+#                 # Calculate approval using the custom function
+#                 final_approved = calculate_approval(
+#                     approved_true_count, approved_false_count, new_count)
+#             else:
+#                 # If dev flag is set, automatically approve the string
+#                 final_approved = True
+#                 new_count = 1
+
+#             # Insert new string, assume no manual approval yet (human_approved = None)
+#             cursor.execute('INSERT INTO strings (string, approved, count, approved_true_count, approved_false_count, human_approved) VALUES (?, ?, ?, ?, ?, ?)',
+#                            (lower_string, final_approved, new_count, approved_true_count, approved_false_count, None))
+#             cursor.execute('SELECT last_insert_rowid()')
+#             word_id = cursor.fetchone()[0]
+
+#         conn.commit()
+
+#     # Emit the new/updated string to the display frontend **only if** AI approved it or dev mode is enabled
+#     if final_approved:
+#         socketio.emit('new_word', {"id": word_id,
+#                       "string": lower_string, "count": new_count})
+
+#     # Emit all stored words to the moderator dashboard
+#     cursor.execute('SELECT id, string, approved, count FROM strings')
+#     all_strings = cursor.fetchall()
+
+#     socketio.emit('all_words', [
+#         {"id": row[0], "string": row[1],
+#             "approved": bool(row[2]), "count": row[3]}
+#         for row in all_strings
+#     ])
+
+#     return jsonify({
+#         "message": "String stored successfully",
+#         "string": lower_string,
+#         "approved": bool(final_approved),
+#         "ai_approved_true_count": approved_true_count,
+#         "ai_approved_false_count": approved_false_count,
+#         "total_count": new_count,
+#         "manually_approved": human_approved,
+#         "dev_mode": dev  # Return whether dev mode was active
+#     }), 201
 
 
 # Route to approve/unapprove a string

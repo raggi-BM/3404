@@ -1064,232 +1064,6 @@ if (!window.clearImmediate) {
       return true
     }
 
-  //   var drawBox = function drawBox(gx, gy, info, word, weight, distance, theta, rotateDeg, customFont, wordId) {
-  //     var ctx = elements[0].getContext('2d', { willReadFrequently: true });
-  //     var mu = info.mu;
-  //     var fontSize = info.fontSize;
-  //     var paddingWidth = info.paddingWidth;
-  //     var paddingHeight = info.paddingHeight;
-  //     var margin = info.margin;
-  //     var originalHeight = info.checkBoxHeight;
-  //     var desiredHeight = 100; // Desired box height
-  //     var scaleFactor = desiredHeight / originalHeight; // Calculate scaling factor
-  
-  //     // Clear the entire canvas
-  //     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  
-  //     // Save context before scaling
-  //     ctx.save();
-  //     ctx.scale(scaleFactor, scaleFactor); // Apply scaling based on the calculated scale factor
-  
-  //     // Calculate the pixel positions (before scaling back)
-  //     var pixelX = (gx + info.gw / 2) * settings.gridSize;
-  //     var pixelY = (gy + info.gh / 2) * settings.gridSize;
-  
-  //     // Get fontWeight that will be used to set ctx.font and font style rule
-  //     var fontWeight = getTextFontWeight ? getTextFontWeight(word, weight, fontSize) : settings.fontWeight;
-  
-  //     // Step 1: Draw the bounding box with padding
-  //     ctx.strokeStyle = '#000'; // Color for the box border
-  //     ctx.lineWidth = 2; // Line width for the box
-  //     ctx.strokeRect(gx * settings.gridSize, gy * settings.gridSize, info.checkBoxWidth, info.checkBoxHeight);
-  
-  //     // Step 2: Set up the font and text style for drawing the word inside the box
-  //     ctx.font = fontWeight + ' ' + (info.fontSize * mu).toString(10) + 'px ' + customFont;
-  //     ctx.fillStyle = '#377e22'; // Use the correct color for the text (greenish #377e22)
-  
-  //     // Draw the word on top of the box without offset
-  //     var textX = gx * settings.gridSize;
-  //     var textY = gy * settings.gridSize;
-  //     ctx.fillText(word, textX * mu, textY * mu); // Draw the word
-  
-  //     // Restore the original context (after scaling)
-  //     ctx.restore();
-  
-  //     // Now perform checks and calculations based on the scaled size
-  
-  //     var boxX = gx * settings.gridSize;
-  //     var boxY = gy * settings.gridSize;
-  //     var boxWidth = info.checkBoxWidth;
-  //     var boxHeight = info.checkBoxHeight;
-  
-  //     if (boxWidth <= 0 || boxHeight <= 0) {
-  //         return;
-  //     }
-
-  //     function checkBufferZone(startX, startY, width, height, isLeftBuffer) {
-  //       var bufferData = ctx.getImageData(startX, startY, width, height); // Buffer zone area
-  //       var bufferPixels = bufferData.data; // RGBA values
-    
-  //       var foundGreenPixel = false; // Flag to track if a green pixel is found
-  //       var farthestGreenPixelX = isLeftBuffer ? width : 0; // Initialize as farthest possible, depending on the buffer side
-  //       var halfWidth = Math.floor(bufferSize); // Calculate half of the buffer width
-    
-  //       // Define the scan direction based on left or right buffer
-  //       var startColumn = isLeftBuffer ? width - 1 : 0; // Start from right for left buffer, left for right buffer
-  //       var step = isLeftBuffer ? -1 : 1; // Step direction: left buffer moves left, right buffer moves right
-    
-  //       var hasReachedHalf = false; // Flag to check if we've passed half of the buffer
-    
-  //       // Scan columns one by one
-  //       for (var x = startColumn; (isLeftBuffer ? x >= 0 : x < width); x += step) {
-  //           var isGreenPixelInColumn = false;
-    
-  //           // Check every row in this column for green pixels
-  //           for (var y = 0; y < height; y++) {
-  //               var pixelIndex = (y * width + x) * 4; // Calculate the RGBA index for this pixel
-    
-  //               var red = bufferPixels[pixelIndex];
-  //               var green = bufferPixels[pixelIndex + 1];
-  //               var blue = bufferPixels[pixelIndex + 2];
-  //               var alpha = bufferPixels[pixelIndex + 3];
-    
-  //               // Check if this pixel is green (the green pixel we are looking for)
-  //               if (red === 55 && green === 126 && blue === 34 && alpha > 0) {
-  //                   isGreenPixelInColumn = true;
-  //                   farthestGreenPixelX = isLeftBuffer ? (width - x) : x; // Track the farthest green pixel
-  //                   foundGreenPixel = true; // Mark that we found at least one green pixel
-    
-  //                   // Render the current column as red for visualization (optional)
-  //                   ctx.fillStyle = 'rgba(255, 0, 0, 0.5)'; // Red with transparency
-  //                   ctx.fillRect(startX + x, startY, 1, height); // Render one column wide (x position)
-  //                   break; // No need to check other rows if we found a green pixel in this column
-  //               }
-  //           }
-    
-  //           // Check if we've passed half the buffer width
-  //           if (Math.abs(startColumn - x) >= halfWidth) {
-  //               hasReachedHalf = true;
-  //           }
-    
-  //           // If we've reached half of the buffer zone and no green pixel was found in the current column, stop
-  //           if (hasReachedHalf && !isGreenPixelInColumn && foundGreenPixel) {
-  //               break;
-  //           }
-    
-  //           // If we've passed half and haven't found any green pixels at all, stop
-  //           if (hasReachedHalf && !foundGreenPixel) {
-  //               break;
-  //           }
-  //       }
-    
-  //       // Return the farthest green pixel, even if none was found
-  //       return isLeftBuffer ? farthestGreenPixelX : -farthestGreenPixelX;
-  //   }
-    
-  
-  //     // Step 3: Capture the pixel data of the box area
-  //     var pixelData = ctx.getImageData(boxX, boxY, boxWidth, boxHeight);
-  //     var pixels = pixelData.data;
-  
-  //     // Perform pixel-based checks (e.g., find the lowest green pixel) based on the scaled values
-  //     var lowestGreenPixelY = 0;
-  //     var rowsChecked = 0;
-  //     var greenPixelFound = true; // Start as true to ensure we check at least the first few rows
-  //     var minRowsToCheck = 10;
-  
-  //     for (var i = 0; i < pixels.length; i += 4) {
-  //         var red = pixels[i];
-  //         var green = pixels[i + 1];
-  //         var blue = pixels[i + 2];
-  //         var alpha = pixels[i + 3];
-  
-  //         var pixelIndex = i / 4;
-  //         var xPos = pixelIndex % boxWidth;
-  //         var yPos = Math.floor(pixelIndex / boxWidth);
-  
-  //         ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
-  //         ctx.fillRect(boxX + xPos, boxY + yPos, 1, 1);
-  
-  //         if (xPos === 0) {
-  //             greenPixelFound = false;
-  //         }
-  
-  //         if (red === 55 && green === 126 && blue === 34 && alpha > 0) {
-  //             greenPixelFound = true;
-  //             if (yPos > lowestGreenPixelY) {
-  //                 lowestGreenPixelY = yPos;
-  //             }
-  //         }
-  
-  //         if (xPos === boxWidth - 1) {
-  //             rowsChecked++;
-  //             if (rowsChecked >= minRowsToCheck && !greenPixelFound) {
-  //                 break;
-  //             }
-  //         }
-  //     }
-  
-  //     // Step 5: Calculate the offset based on the lowest green pixel position
-  //     var offsetY = info.paddedHeight - lowestGreenPixelY - (paddingHeight * 1.05 + margin * 2); 
-  
-  //     // Step 6: Draw two buffer zones
-  //     var bufferSize = Math.floor(info.paddedWidth / 8);
-  //     bufferSize = bufferSize === 0 ? 6 : bufferSize;
-  //     var bufferHeight = boxHeight;
-  //     var bufferTopOffset = boxHeight + 3;
-  //     var overlap = info.paddedWidth / 16;
-  
-  //     // Draw the left and right buffer zones
-  //     var leftBufferX = boxX - bufferSize + overlap;
-  //     var leftBufferY = boxY - bufferTopOffset;
-  //     ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)';
-  //     ctx.lineWidth = 2;
-  //     ctx.strokeRect(leftBufferX - 2, leftBufferY - 2, bufferSize + 4, bufferHeight + 4);
-  
-  //     var rightBufferX = boxX + boxWidth - overlap;
-  //     var rightBufferY = boxY - bufferTopOffset;
-  //     ctx.strokeRect(rightBufferX - 2, rightBufferY - 2, bufferSize + 4, bufferHeight + 4);
-  
-  //     // Step 7: Check the buffer zones (left and right)
-  //     var farthestGreenPixelLeft = checkBufferZone(leftBufferX, leftBufferY, bufferSize, bufferHeight, true);
-  //     var farthestGreenPixelRight = checkBufferZone(rightBufferX, rightBufferY, bufferSize, bufferHeight, false);
-  
-  //     var farthestGreenPixelSum = 0;
-  //     if (farthestGreenPixelRight < 0 && farthestGreenPixelLeft > 0) {
-  //         farthestGreenPixelSum = farthestGreenPixelLeft + farthestGreenPixelRight;
-  //     } else if (farthestGreenPixelRight < 0) {
-  //         farthestGreenPixelSum = farthestGreenPixelRight;
-  //     } else if (farthestGreenPixelLeft > 0) {
-  //         farthestGreenPixelSum = farthestGreenPixelLeft;
-  //     }
-  
-  //     var horizontalOffsetX = paddingWidth + farthestGreenPixelSum;
-  
-  //     // Step 8: Redraw the word with horizontal offset applied
-  //     ctx.save();
-  //     ctx.scale(scaleFactor, scaleFactor); // Re-apply scaling
-  
-  //     ctx.strokeStyle = '#000';
-  //     ctx.lineWidth = 2;
-  //     ctx.strokeRect(gx * settings.gridSize, gy * settings.gridSize, info.paddedWidth, info.paddedHeight);
-  
-  //     ctx.font = fontWeight + ' ' + (info.fontSize * mu).toString(10) + 'px ' + customFont;
-  //     ctx.fillStyle = '#377e22'; 
-  
-  //     ctx.fillText(word, (textX + horizontalOffsetX) * mu, (textY + offsetY) * mu);
-  //     ctx.restore(); // Restore the context again
-  
-  //     // Optional: Store word details
-  //     wordData.push({
-  //         paddingHeight: paddingHeight,
-  //         paddingWidth: paddingWidth,
-  //         info: info,
-  //         text: word,
-  //         x: pixelX,
-  //         y: pixelY,
-  //         size: fontSize,
-  //         rotation: rotateDeg,
-  //         mu: mu,
-  //         offsetX: horizontalOffsetX,
-  //         offsetY: offsetY,
-  //         baseline: 'middle',
-  //         fontFamily: customFont,
-  //         wordId: wordId,
-  //     });
-  // };
-  
-
     var drawBox = function drawBox(gx, gy, info, word, weight, distance, theta, rotateDeg, customFont, wordId) {
       var ctx = elements[0].getContext('2d', { willReadFrequently: true });
       var mu = info.mu;
@@ -1384,7 +1158,7 @@ if (!window.clearImmediate) {
 
           // Continue checking at least the first 3 rows, or stop if no green pixel found after that
           if (rowsChecked >= minRowsToCheck && !greenPixelFound) {
-
+            
             break; // Stop checking once we find a row with no green pixels after 3 rows
           }
         }
@@ -1392,7 +1166,7 @@ if (!window.clearImmediate) {
 
 
 
-      // //debugger
+      debugger
       // Step 5: Calculate the offset based on the lowest green pixel position
       var offsetY = info.paddedHeight - lowestGreenPixelY - (paddingHeight * 1.05 + margin * 2); // Offset from the bottom of the box
 
@@ -1429,14 +1203,14 @@ if (!window.clearImmediate) {
 
         var foundGreenPixel = false; // Flag to track if a green pixel is found
         var farthestGreenPixelX = isLeftBuffer ? width : 0; // Initialize as farthest possible, depending on the buffer side
-        var halfWidth = Math.floor(bufferSize); // Calculate half of the buffer width
+        var halfWidth = Math.floor(bufferSize/1.1); // Calculate half of the buffer width
 
         // Define the scan direction based on left or right buffer
         var startColumn = isLeftBuffer ? width - 1 : 0; // Start from right for left buffer, left for right buffer
         var step = isLeftBuffer ? -1 : 1; // Step direction: left buffer moves left, right buffer moves right
 
         var hasReachedHalf = false; // Flag to check if we've passed half of the buffer
-
+        debugger
         // Scan columns one by one
         for (var x = startColumn; (isLeftBuffer ? x >= 0 : x < width); x += step) {
           var isGreenPixelInColumn = false;
@@ -1455,6 +1229,7 @@ if (!window.clearImmediate) {
 
             // Check if this pixel is green
             if (!(red === 0 && green === 0 && blue === 0 && alpha === 0)) {
+              debugger
               //console.log('Green pixel found at X:', x, 'Y:', y);
               isGreenPixelInColumn = true;
               farthestGreenPixelX = isLeftBuffer ? (width - x) : x; // Track the farthest green pixel
@@ -1471,20 +1246,21 @@ if (!window.clearImmediate) {
 
           // Check if we've passed half the buffer width
           if (Math.abs(startColumn - x) >= halfWidth) {
+            debugger
             hasReachedHalf = true;
           }
 
           // If we've reached half of the buffer zone, and no green pixel was found in the current column, stop
           if (hasReachedHalf && !isGreenPixelInColumn && foundGreenPixel) {
-            //console.log('Farthest green pixel in left buffer:', farthestGreenPixelX);
-            //debugger
+            console.log('Farthest green pixel in left buffer:', farthestGreenPixelX);
+            debugger
             break;
           }
 
           // If we've passed half and haven't found any green pixels at all, stop
           if (hasReachedHalf && !foundGreenPixel) {
-            //console.log('No green pixels found in left buffer');
-            //debugger
+            console.log('No green pixels found in left buffer');
+            debugger
             break;
           }
         }

@@ -5,9 +5,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <!-- <script src="./wordcloud2.js"></script> -->
-    <link
+    <!-- <link
         href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Lora:wght@400;700&family=Lobster&display=swap"
-        rel="stylesheet">
+        rel="stylesheet"> -->
+        <link
+  href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lora:wght@400;600&family=Crimson+Text:ital,wght@1,700&family=Archivo+Narrow:wght@700&display=swap"
+  rel="stylesheet">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WordCloud with Matter.js</title>
@@ -196,7 +200,9 @@
 
 
     function createWordObject(word) {
-        const fontFamily = getRandomItem(['Merriweather', 'Oswald', 'Playfair Display', 'Lora', 'Lobster']);
+        // const fontFamily = getRandomItem(['Merriweather', 'Oswald', 'Playfair Display', 'Lora', 'Lobster']);
+        const fontFamily = getRandomItem(['Bebas Neue', 'Lora', 'Crimson Text', 'Archivo Narrow']);
+
         // Add word to the wordsMap
         // const fontFamily = getRandomItem([
         //     'BebasNeueBold',
