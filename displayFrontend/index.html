@@ -546,16 +546,21 @@
     }
 
 
-let MasterOpacity = 1;
+    let MasterOpacity = 1;
 let OpacityLowTrigger = false;
 let duration = 950; // Total fade duration in milliseconds
 let startTime; // Variable to store the start time of the animation
 let holdDuration = 35000; // How long to hold at fully faded in before fading out again
 let fadeComplete = false; // To track if fade-in is complete
+let fadeOutTimeout; // Variable to store the fade-out timeout
 
-// 30 seconds after the last word is added, start fading out the words
-function fadeOutWords() {
-    setTimeout(() => {
+// Clear any existing fadeOut timeout and set a new one
+function scheduleFadeOut() {
+    if (fadeOutTimeout) {
+        clearTimeout(fadeOutTimeout); // Cancel the previous fade-out if it was scheduled
+    }
+
+    fadeOutTimeout = setTimeout(() => {
         if (fadeComplete) { // Ensure that fade-out happens only if fade-in completed
             OpacityLowTrigger = true;
             startTime = Date.now();  // Reset startTime for fade-out
@@ -593,7 +598,7 @@ function WordFader() {
         } else {
             MasterOpacity = 1; // Ensure opacity is exactly 1 at the end
             fadeComplete = true; // Mark that fade-in is complete
-            fadeOutWords(); // Now safely trigger fade-out after fade-in is complete
+            scheduleFadeOut(); // Safely trigger fade-out after fade-in is complete
         }
     }
 
@@ -602,11 +607,13 @@ function WordFader() {
 
 // Trigger the fade-in manually
 function startFadeIn() {
+    // Remove the check to ensure fade-in always triggers
     OpacityLowTrigger = false;
     startTime = Date.now();  // Initialize startTime for fade-in
     fadeComplete = false; // Reset this flag when starting a new fade-in
     WordFader();  // Start fade-in
 }
+
 
 
 // 
