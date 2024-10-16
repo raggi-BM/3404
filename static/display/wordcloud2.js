@@ -18,13 +18,13 @@ var proStatus = new Proxy({ _done: false }, {
   }
 });
 
-// ////console.log(proStatus); // Should print: Proxy { _done: false }
+// ////// console.log(proStatus); // Should print: Proxy { _done: false }
 
 
 
 // Add a function to handle post-processing
 var processingDone = function () {
-  // ////console.log("All words have been processed. Word data:", wordData);
+  // ////// console.log("All words have been processed. Word data:", wordData);
   // Additional logic can be added here
 };
 // setImmediate
@@ -556,16 +556,16 @@ if (!window.clearImmediate) {
 
     var getBoxInfo = function getBoxInfo(word, weight, rotateDeg, extraDataArray, customFont) {
       // Log the word being processed
-      // ////console.log("Processing word:", word);
+      // ////// console.log("Processing word:", word);
 
       var fontSize = settings.weightFactor(weight);
       if (fontSize <= settings.minSize) {
-        // ////console.log("Word skipped due to small font size:", fontSize);
+        // ////// console.log("Word skipped due to small font size:", fontSize);
         return false;
       }
 
       var padding = settings.boxPadding || 0;
-      // ////console.log("Font size:", fontSize, "Padding:", padding);
+      // ////// console.log("Font size:", fontSize, "Padding:", padding);
 
       // Scaling factor, similar to getTextInfo
       var mu = 1;
@@ -578,7 +578,7 @@ if (!window.clearImmediate) {
           return mu;
         })();
       }
-      // ////console.log("Scaling factor (mu):", mu);
+      // ////// console.log("Scaling factor (mu):", mu);
 
       // Create a canvas to measure the text dimensions
       var fcanvas = document.createElement('canvas');
@@ -588,33 +588,33 @@ if (!window.clearImmediate) {
       // Measure text dimensions
       var fw = fctx.measureText(word).width / mu;
       var fh = Math.max(fontSize * mu, fctx.measureText('m').width, fctx.measureText('\uFF37').width) / mu;
-      // ////console.log("Measured dimensions:", { fw, fh });
+      // ////// console.log("Measured dimensions:", { fw, fh });
 
       // Add padding to the dimensions to get the bounding box size
       var paddedWidth = fw + padding * 2;
       var paddedHeight = fh + padding * 2;
-      // ////console.log("Padded dimensions:", { paddedWidth, paddedHeight });
+      // ////// console.log("Padded dimensions:", { paddedWidth, paddedHeight });
 
       // Calculate the number of grid cells occupied by the box
       var gw = Math.ceil(paddedWidth / settings.gridSize);
       var gh = Math.ceil(paddedHeight / settings.gridSize);
-      // ////console.log("Grid cells (gw, gh):", { gw, gh });
+      // ////// console.log("Grid cells (gw, gh):", { gw, gh });
 
       // Calculate the offsets for centering the text in the box
       var fillTextOffsetX = -fw / 2;
       var fillTextOffsetY = -fh * 0.4;
-      // ////console.log("Text offsets (X, Y):", { fillTextOffsetX, fillTextOffsetY });
+      // ////// console.log("Text offsets (X, Y):", { fillTextOffsetX, fillTextOffsetY });
 
       // Adjust for rotation
       var cgh = Math.ceil((paddedWidth * Math.abs(Math.sin(rotateDeg)) +
         paddedHeight * Math.abs(Math.cos(rotateDeg))) / settings.gridSize);
       var cgw = Math.ceil((paddedWidth * Math.abs(Math.cos(rotateDeg)) +
         paddedHeight * Math.abs(Math.sin(rotateDeg))) / settings.gridSize);
-      // ////console.log("Canvas grid cells with rotation (cgw, cgh):", { cgw, cgh });
+      // ////// console.log("Canvas grid cells with rotation (cgw, cgh):", { cgw, cgh });
 
       var width = cgw * settings.gridSize;
       var height = cgh * settings.gridSize;
-      // ////console.log("Canvas width and height:", { width, height });
+      // ////// console.log("Canvas width and height:", { width, height });
 
       fcanvas.setAttribute('width', width);
       fcanvas.setAttribute('height', height);
@@ -639,14 +639,14 @@ if (!window.clearImmediate) {
           occupied.push([gx, gy]);  // Mark each grid cell inside the box as occupied
         }
       }
-      // ////console.log("Occupied grid cells:", occupied);
+      // ////// console.log("Occupied grid cells:", occupied);
 
       // Define bounds based on the full bounding box
       var bounds = [0, gw - 1, gh - 1, 0];
-      // ////console.log("Bounds:", bounds);
+      // ////// console.log("Bounds:", bounds);
 
-      // Add ////////// //debugger statement for deep inspection during execution
-      ////////// //debugger;
+      // Add ////////// //// debugger; statement for deep inspection during execution
+      ////////// //// // debugger;;
 
       // Return information about the box and text for placement
       return {
@@ -667,17 +667,17 @@ if (!window.clearImmediate) {
     };
 
     var getBoxInfoWithPixelData = function getBoxInfoWithPixelData(word, weight, rotateDeg, extraDataArray, customFont) {
-      // ////console.log("Rendering word with added spaces in a new canvas and calculating bounding box...");
+      // ////// console.log("Rendering word with added spaces in a new canvas and calculating bounding box...");
 
       var padding = settings.boxPadding || 0; // Padding around the word, add it as % of the words width to all sides before calculating the bounding box
       var margin = settings.margin;
       var fontSize = settings.weightFactor(weight);
       if (fontSize <= settings.minSize) {
-        // ////console.log("Word skipped due to small font size:", fontSize);
+        // ////// console.log("Word skipped due to small font size:", fontSize);
         return false;
       }
 
-      // ////console.log("Font size:", fontSize);
+      // ////// console.log("Font size:", fontSize);
 
       var mu = 1;
       if (fontSize < minFontSize) {
@@ -793,7 +793,7 @@ if (!window.clearImmediate) {
       var fillTextOffsetX = offsetX * mu;
       var fillTextOffsetY = offsetY * mu;
 
-      // ////console.log("Pixel-based bounding box:", { accurateWidth, accurateHeight, gw, gh, bounds });
+      // ////// console.log("Pixel-based bounding box:", { accurateWidth, accurateHeight, gw, gh, bounds });
 
       // Calculate the grid cells that the box covers and store in `occupied`
       var occupied = [];
@@ -1096,7 +1096,7 @@ if (!window.clearImmediate) {
       var textX = gx * settings.gridSize; // X position is the same
       var textY = gy * settings.gridSize; // Y position is the same (no offset yet)
       ctx.fillText(word, textX * mu, textY * mu); // Draw the word
-      // //debugger
+      // //// debugger;
       ctx.restore();
 
       // Step 3: Capture the pixel data of the box area
@@ -1166,7 +1166,7 @@ if (!window.clearImmediate) {
 
 
 
-      debugger
+      // debugger;
       // Step 5: Calculate the offset based on the lowest green pixel position
       var offsetY = info.paddedHeight - lowestGreenPixelY - (paddingHeight * 1.05 + margin * 2); // Offset from the bottom of the box
 
@@ -1210,7 +1210,7 @@ if (!window.clearImmediate) {
         var step = isLeftBuffer ? -1 : 1; // Step direction: left buffer moves left, right buffer moves right
 
         var hasReachedHalf = false; // Flag to check if we've passed half of the buffer
-        debugger
+        // debugger;
         // Scan columns one by one
         for (var x = startColumn; (isLeftBuffer ? x >= 0 : x < width); x += step) {
           var isGreenPixelInColumn = false;
@@ -1225,12 +1225,12 @@ if (!window.clearImmediate) {
             var alpha = bufferPixels[pixelIndex + 3];
 
             //log current pixel color
-            //console.log('Pixel color at X:', x, 'Y:', y, 'R:', red, 'G:', green, 'B:', blue, 'A:', alpha);
+            //// console.log('Pixel color at X:', x, 'Y:', y, 'R:', red, 'G:', green, 'B:', blue, 'A:', alpha);
 
             // Check if this pixel is green
             if (!(red === 0 && green === 0 && blue === 0 && alpha === 0)) {
-              debugger
-              //console.log('Green pixel found at X:', x, 'Y:', y);
+              // debugger;
+              //// console.log('Green pixel found at X:', x, 'Y:', y);
               isGreenPixelInColumn = true;
               farthestGreenPixelX = isLeftBuffer ? (width - x) : x; // Track the farthest green pixel
               foundGreenPixel = true; // Mark that we found at least one green pixel
@@ -1246,25 +1246,25 @@ if (!window.clearImmediate) {
 
           // Check if we've passed half the buffer width
           if (Math.abs(startColumn - x) >= halfWidth) {
-            debugger
+            // debugger;
             hasReachedHalf = true;
           }
 
           // If we've reached half of the buffer zone, and no green pixel was found in the current column, stop
           if (hasReachedHalf && !isGreenPixelInColumn && foundGreenPixel) {
-            console.log('Farthest green pixel in left buffer:', farthestGreenPixelX);
-            debugger
+            // console.log('Farthest green pixel in left buffer:', farthestGreenPixelX);
+            // debugger;
             break;
           }
 
           // If we've passed half and haven't found any green pixels at all, stop
           if (hasReachedHalf && !foundGreenPixel) {
-            console.log('No green pixels found in left buffer');
-            debugger
+            // console.log('No green pixels found in left buffer');
+            // debugger;
             break;
           }
         }
-        //debugger
+        //// debugger;
         // Return the last farthest green pixel, even if none was found
         return isLeftBuffer ? farthestGreenPixelX : -farthestGreenPixelX;
       }
@@ -1278,8 +1278,8 @@ if (!window.clearImmediate) {
       // Check left and right buffer zones
       var farthestGreenPixelLeft = checkBufferZone(leftBufferX, leftBufferY, bufferSize, bufferHeight, true);
       var farthestGreenPixelRight = checkBufferZone(rightBufferX, rightBufferY, bufferSize, bufferHeight, false);
-      // ////console.log('Farthest green pixel in left buffer:', farthestGreenPixelLeft);
-      // ////console.log('Farthest green pixel in right buffer:', farthestGreenPixelRight);
+      // ////// console.log('Farthest green pixel in left buffer:', farthestGreenPixelLeft);
+      // ////// console.log('Farthest green pixel in right buffer:', farthestGreenPixelRight);
 
       // Sum the distances from both buffers
       var farthestGreenPixelSum = 0;
@@ -1295,25 +1295,25 @@ if (!window.clearImmediate) {
         farthestGreenPixelSum = farthestGreenPixelLeft;
       }
 
-      //console.log('Farthest green pixel sum:', farthestGreenPixelSum);
-      //debugger
+      //// console.log('Farthest green pixel sum:', farthestGreenPixelSum);
+      //// debugger;
 
       // Step 8: Adjust horizontal position based on buffer zones
       var horizontalOffsetX = paddingWidth + farthestGreenPixelSum;
 
-      // ////console.log('Farthest green pixel sum:', farthestGreenPixelSum);
+      // ////// console.log('Farthest green pixel sum:', farthestGreenPixelSum);
       // // Step 8: Adjust horizontal position based on buffer zones
       // // var horizontalOffsetX =  margin + padding - margin/2; // Default horizontal offset
       // var horizontalOffsetX = paddingWidth;
 
       // if (farthestGreenPixelRight > 0) {
-      //   // ////console.log('Farthest green pixel in right buffer:', farthestGreenPixelRight);
+      //   // ////// console.log('Farthest green pixel in right buffer:', farthestGreenPixelRight);
       //   // Move the word to the left by how far the farthest green pixel is in the right buffer
-      //   // //debugger
+      //   // //// debugger;
       //   horizontalOffsetX = horizontalOffsetX-farthestGreenPixelRight;
       // } else if (farthestGreenPixelLeft > 0) {
-      //   // ////console.log('Farthest green pixel in left buffer:', farthestGreenPixelLeft);
-      //   // //debugger
+      //   // ////// console.log('Farthest green pixel in left buffer:', farthestGreenPixelLeft);
+      //   // //// debugger;
       //   // Move the word to the right by how far the farthest green pixel is from the right side of the left buffer
       //   horizontalOffsetX = horizontalOffsetX+farthestGreenPixelLeft;
       // }
@@ -1333,8 +1333,8 @@ if (!window.clearImmediate) {
 
       // Draw the word using the new X and Y positions (with the horizontal offset)
       ctx.fillText(word, (textX + horizontalOffsetX) * mu, (textY + offsetY) * mu);
-      // ////console.log("Text drawn at X:", (textX + horizontalOffsetX) * mu, "Y:", (textY + offsetY) * mu);
-      // //debugger
+      // ////// console.log("Text drawn at X:", (textX + horizontalOffsetX) * mu, "Y:", (textY + offsetY) * mu);
+      // //// debugger;
       ctx.restore();
 
       // clear the canvas
@@ -1343,7 +1343,7 @@ if (!window.clearImmediate) {
       // textPosX = (textX + horizontalOffsetX) * mu;
       // textPosY = (textY + offsetY) * mu;
       // rectPosx = gx * settings.gridSize;
-
+      
 
       // Store word details in wordData array (optional if needed)
       wordData.push({
@@ -1429,12 +1429,12 @@ if (!window.clearImmediate) {
     //   var start = function start() {
     //     // All the logic for drawing remains here...
     //     // Start the word cloud generation process
-    //     // ////console.log("Starting word cloud generation...");
+    //     // ////// console.log("Starting word cloud generation...");
     // var timerId = setImmediate(function loop() {
-    //   // ////console.log("Current word index:", i);
+    //   // ////// console.log("Current word index:", i);
     //       if (i >= settings.list.length) {
     //         clearImmediate(timerId);
-    //         // ////console.log('All words have been processed. Word data:', wordData);
+    //         // ////// console.log('All words have been processed. Word data:', wordData);
     //         // Call processingDone once all words have been processed
     //         processingDone();
 
@@ -1446,13 +1446,13 @@ if (!window.clearImmediate) {
 
     //       if (drawn) {
     //         // Log the word if drawn successfully
-    //         //// ////console.log('Word Drawn:', settings.list[i][0]);
+    //         //// ////// console.log('Word Drawn:', settings.list[i][0]);
     //       }
 
     //       i++;
     //       timerId = setImmediate(loop);
     //     });
-    //     //// ////console.log('Word Data:', wordData);
+    //     //// ////// console.log('Word Data:', wordData);
     //     // At the end, return the collected word data
     //     return wordData;
     //   };
@@ -1550,17 +1550,17 @@ if (!window.clearImmediate) {
       var extraDataArray = getItemExtraData(item);
 
 
-      //// //debugger;
+      //// //// // debugger;;
       // Conditionally get info either for the text or for the box
       var info = settings.boxPadding > 0
         ? getBoxInfoWithPixelData(word, weight, rotateDeg, extraDataArray, customFont)
         : getTextInfo(word, weight, rotateDeg, extraDataArray, customFont);
 
 
-      // ////console.log('newbox info:', getBoxInfoWithPixelData(word, weight, rotateDeg, extraDataArray, customFont));
-      // ////console.log('box Info:', getBoxInfo(word, weight, rotateDeg, extraDataArray, customFont));
-      // ////console.log('text Info:', getTextInfo(word, weight, rotateDeg, extraDataArray, customFont));
-      //// //debugger;
+      // ////// console.log('newbox info:', getBoxInfoWithPixelData(word, weight, rotateDeg, extraDataArray, customFont));
+      // ////// console.log('box Info:', getBoxInfo(word, weight, rotateDeg, extraDataArray, customFont));
+      // ////// console.log('text Info:', getTextInfo(word, weight, rotateDeg, extraDataArray, customFont));
+      //// //// // debugger;;
 
       if (!info) {
         return false; // Skip this word if no info is returned
@@ -1894,7 +1894,7 @@ if (!window.clearImmediate) {
       addEventListener('wordcloudstart', anotherWordCloudStart)
       timer[timerId] = loopingFunction(function loop() {
         if (i >= settings.list.length) {
-          // ////console.log("proStatus before setting done:", proStatus); // Debug log
+          // ////// console.log("proStatus before setting done:", proStatus); // Debug log
 
           stoppingFunction(timer[timerId])
           sendEvent('wordcloudstop', false)
@@ -1902,13 +1902,13 @@ if (!window.clearImmediate) {
           delete timer[timerId];
           // Mark the word cloud generation as complete
           proStatus.done = true;
-          // ////console.log("proStatus after setting done:", proStatus); // Debug log
-          // ////console.log("Word cloud generation is complete.");
+          // ////// console.log("proStatus after setting done:", proStatus); // Debug log
+          // ////// console.log("Word cloud generation is complete.");
 
           return
         }
         escapeTime = (new Date()).getTime()
-        ////////// //debugger;
+        ////////// //// // debugger;;
         var drawn = putWord(settings.list[i])
         var canceled = !sendEvent('wordclouddrawn', true, {
           item: settings.list[i],
@@ -1928,9 +1928,9 @@ if (!window.clearImmediate) {
       }, settings.wait)
     }
 
-    // ////console.log("Before calling start()...");
+    // ////// console.log("Before calling start()...");
     start();  // Ensure this is being called in your script
-    // ////console.log("After calling start()...");
+    // ////// console.log("After calling start()...");
   }
 
   WordCloud.isSupported = isSupported

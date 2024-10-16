@@ -45,7 +45,7 @@ def send_words_to_endpoint(words, url, headers):
             print(f"Error occurred: {e}")
 
         # Wait for 3.5 seconds before sending the next word
-        time.sleep(3.5)
+        time.sleep(5)
 
 
 # Main function to run the script

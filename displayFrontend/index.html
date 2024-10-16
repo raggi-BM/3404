@@ -8,9 +8,9 @@
     <!-- <link
         href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Lora:wght@400;700&family=Lobster&display=swap"
         rel="stylesheet"> -->
-        <link
-  href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lora:wght@400;600&family=Crimson+Text:ital,wght@1,700&family=Archivo+Narrow:wght@700&display=swap"
-  rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lora:wght@400;600&family=Crimson+Text:ital,wght@1,700&family=Archivo+Narrow:wght@700&display=swap"
+        rel="stylesheet">
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -76,15 +76,15 @@
         if (event.clientX !== lastMousePosition.x || event.clientY !== lastMousePosition.y) {
             // Update the last mouse position
             lastMousePosition = { x: event.clientX, y: event.clientY };
-            ////console.log('Mouse moved!');
-            ////console.log('Mouse position:', lastMousePosition);
+            ////// console.log('Mouse moved!');
+            ////// console.log('Mouse position:', lastMousePosition);
 
             clearTimeout(inactivityTimer); // Clear the previous timer
             showCursor(); // Show the cursor if the user moves the mouse
 
             // Set a new timeout to hide the cursor after 2000ms of inactivity
             inactivityTimer = setTimeout(hideCursor, 2000);
-            ////console.log('Cursor hidden after 2000ms of inactivity');
+            ////// console.log('Cursor hidden after 2000ms of inactivity');
         }
     }
 
@@ -151,7 +151,7 @@
                     const otherBounds = otherBody.bounds;
                     if (Matter.Bounds.overlaps(shrunkBounds, otherBounds)) {
                         // Handle the custom collision logic
-                        ////console.log(`Collision detected between ${body.label} and ${otherBody.label}`);
+                        ////// console.log(`Collision detected between ${body.label} and ${otherBody.label}`);
                     }
                 }
             });
@@ -173,15 +173,13 @@
         return array[Math.floor(Math.random() * array.length)];
     }
 
-    function mapWordsToArray() {
-        return Array.from(wordsMap.values()).map(word => [word.string, word.count, word.fontFamily, word.id]);
-    }
+
 
     // Initialize WordCloud with a Proxy for completion status
     var proStatus = new Proxy({ done: false }, {
         set: function (target, prop, value) {
             if (prop === 'done' && value === true) {
-                // //////console.log('Word cloud generation is done!');
+                // //////// console.log('Word cloud generation is done!');
                 onWordCloudComplete();
             }
             target[prop] = value; // Store the new value
@@ -213,6 +211,13 @@
         //     'KorolevBold',
         //     'NewSpiritMedItalic'
         // ]);
+        let minCount = 1;
+        let count
+        if (word.count < minCount) {
+            count = minCount;
+        } else {
+            count = word.count;
+        }
 
         wordsMap.set(word.id, {
             id: word.id,
@@ -222,15 +227,33 @@
         });
 
         // Update the word cloud
-        updateWordCloud();
+        // updateWordCloud();
     }
 
 
     function onWordCloudComplete() {
-        startFadeIn(); // This will initiate the fade-in, followed by hold and fade-out
 
 
         var wordCloudData = getWordCloudData(); // Assume this gives you the positions from WordCloud.js
+        // Iterate over existing wordBodies and remove any that are not in wordCloudData
+        // delete the wordCloudData.info.occupied section from all the words
+
+        wordCloudData.forEach((word) => {
+            delete word.info.occupied;
+        });
+
+           // Convert wordCloudData into a Set of wordIds for faster lookup
+    const wordIdsInCloudData = new Set(wordCloudData.map(data => data.wordId));
+
+// Iterate over existing wordBodies and remove any that are not in wordCloudData
+Object.keys(wordBodies).forEach((wordId) => {
+    if (!wordIdsInCloudData.has(parseInt(wordId))) {
+        // Remove word body from the world and delete it from wordBodies
+        World.remove(world, wordBodies[wordId].body);
+        delete wordBodies[wordId];
+    }
+});
+        startFadeIn(); // This will initiate the fade-in, followed by hold and fade-out
 
 
         wordCloudData.forEach((data) => {
@@ -238,9 +261,9 @@
             // get the area of the paddedheight and paddedwidth
             const area = data.info.paddedHeight * data.info.paddedWidth;
             // the smaller the area the higher the randomness
-            const randomnessFactor = 1 / area *2;
-            //console.log(randomnessFactor);
-            ////debugger;
+            const randomnessFactor = 1 / area * 2;
+            //// console.log(randomnessFactor);
+            ////// debugger;
 
             const wordId = data.wordId; // Assuming `wordId` is included in `data`
             const fontSize = data.size; // This is the target size
@@ -251,27 +274,7 @@
             const targetY = data.y + (Math.random() - 0.5) * randomnessFactor * data.y; // Add random offset to y position
 
             if (wordBodies[wordId]) {
-                // If the word already exists, update its relevant data
-                // const body = wordBodies[wordId].body;
-                // wordBodies[wordId].start = { x: body.position.x, y: body.position.y };
-                // wordBodies[wordId].target = { x: targetX, y: targetY };
-                // wordBodies[wordId].data.targetSize = fontSize;
 
-                // // Update the target offsets and dimensions from WordCloud.js
-                // wordBodies[wordId].data.info.currentFillTextWidth = wordBodies[wordId].data.info.fillTextWidth;
-                // wordBodies[wordId].data.info.currentFillTextHeight = wordBodies[wordId].data.info.fillTextHeight;
-
-                // wordBodies[wordId].data.info.targetFillTextWidth = data.info.fillTextWidth;
-                // wordBodies[wordId].data.info.targetFillTextHeight = data.info.fillTextHeight;
-
-                // wordBodies[wordId].data.info.currentOffsetX = wordBodies[wordId].data.info.currentOffsetX || data.offsetX;
-                // wordBodies[wordId].data.info.currentOffsetY = wordBodies[wordId].data.info.currentOffsetY || data.offsetY;
-                // wordBodies[wordId].data.info.targetOffsetX = data.offsetX;
-                // wordBodies[wordId].data.info.targetOffsetY = data.offsetY;
-
-                // wordBodies[wordId].data.info.currentPaddedHeight = wordBodies[wordId].data.info.paddedHeight;
-                // wordBodies[wordId].data.info.targetPaddedHeight = data.info.paddedHeight;
-                // If the word already exists, update its relevant data
                 const body = wordBodies[wordId].body;
                 wordBodies[wordId].start = { x: body.position.x, y: body.position.y };
                 wordBodies[wordId].target = { x: targetX, y: targetY };
@@ -301,7 +304,7 @@
                             textHeight: data.info.fillTextHeight,
                             lineWeight: data.info.paddedHeight / 25
                         };
-                        //////console.log(`Circle updated: Target textWidth and textHeight: ${handDrawnElements.circle.target.textWidth}, ${handDrawnElements.circle.target.textHeight}`);
+                        //////// console.log(`Circle updated: Target textWidth and textHeight: ${handDrawnElements.circle.target.textWidth}, ${handDrawnElements.circle.target.textHeight}`);
                     }
 
                     if (handDrawnElements.line) {
@@ -315,7 +318,7 @@
                             textHeight: data.info.fillTextHeight,
                             lineWidth: data.info.paddedHeight / 25
                         };
-                        //////console.log(`Line updated: Target textWidth and textHeight: ${handDrawnElements.line.target.textWidth}, ${handDrawnElements.line.target.textHeight}`);
+                        //////// console.log(`Line updated: Target textWidth and textHeight: ${handDrawnElements.line.target.textWidth}, ${handDrawnElements.line.target.textHeight}`);
                     }
                 }
             } else {
@@ -376,9 +379,9 @@
                         // Now, we have a 50/50 chance between the line and the circle
                         const innerChance = Math.random() * 100;
                         if (innerChance < 50) {
-                            //console.log('Hand-drawn line added');
+                            //// console.log('Hand-drawn line added');
                             // 50% chance for the line
-                            //debugger;
+                            //// debugger;
                             handDrawnElements = {
                                 line: seed
                             };
@@ -433,7 +436,7 @@
                 };
 
 
-                // //////console.log(Spawning new word: ${wordText}, at (${spawnX}, ${spawnY}), target size: ${fontSize});
+                // //////// console.log(Spawning new word: ${wordText}, at (${spawnX}, ${spawnY}), target size: ${fontSize});
             }
         });
     }
@@ -502,121 +505,121 @@
             }
             // Handle hand-drawn elements (circle and line) animation separately
             if (data.handDrawnElements) {
-            const handDrawnElements = data.handDrawnElements;
+                // const handDrawnElements = data.handDrawnElements;
 
-            // Handle Circle Scaling
-            if (handDrawnElements.circle) {
-                const circleData = handDrawnElements.circle;
+                // // Handle Circle Scaling
+                // if (handDrawnElements.circle) {
+                //     const circleData = handDrawnElements.circle;
 
-                // Smoothly scale the current size to the target size using lerp
-                circleData.current.textWidth = lerp(circleData.current.textWidth, circleData.target.textWidth, scalingSpeed);
-                circleData.current.textHeight = lerp(circleData.current.textHeight, circleData.target.textHeight, scalingSpeed);
-                circleData.current.lineWeight = lerp(circleData.current.lineWeight, circleData.target.lineWeight, scalingSpeed);
+                //     // Smoothly scale the current size to the target size using lerp
+                //     circleData.current.textWidth = lerp(circleData.current.textWidth, circleData.target.textWidth, scalingSpeed);
+                //     circleData.current.textHeight = lerp(circleData.current.textHeight, circleData.target.textHeight, scalingSpeed);
+                //     circleData.current.lineWeight = lerp(circleData.current.lineWeight, circleData.target.lineWeight, scalingSpeed);
 
-                // Lock the size once it's close to the target size
-                if (Math.abs(circleData.current.textWidth - circleData.target.textWidth) < 0.01) {
-                    circleData.current.textWidth = circleData.target.textWidth;
-                }
-                if (Math.abs(circleData.current.textHeight - circleData.target.textHeight) < 0.01) {
-                    circleData.current.textHeight = circleData.target.textHeight;
-                }
-                if (Math.abs(circleData.current.lineWeight - circleData.target.lineWeight) < 0.01) {
-                    circleData.current.lineWeight = circleData.target.lineWeight;
-                }
+                //     // Lock the size once it's close to the target size
+                //     if (Math.abs(circleData.current.textWidth - circleData.target.textWidth) < 0.01) {
+                //         circleData.current.textWidth = circleData.target.textWidth;
+                //     }
+                //     if (Math.abs(circleData.current.textHeight - circleData.target.textHeight) < 0.01) {
+                //         circleData.current.textHeight = circleData.target.textHeight;
+                //     }
+                //     if (Math.abs(circleData.current.lineWeight - circleData.target.lineWeight) < 0.01) {
+                //         circleData.current.lineWeight = circleData.target.lineWeight;
+                //     }
+                // }
+
+                // // Handle Line Scaling
+                // if (handDrawnElements.line) {
+                //     const lineData = handDrawnElements.line;
+
+                //     // Smoothly scale the current segment length and line width to the target size using lerp
+                //     lineData.current.segmentLength = lerp(lineData.current.segmentLength, lineData.target.segmentLength, scalingSpeed);
+                //     lineData.current.lineWidth = lerp(lineData.current.lineWidth, lineData.target.lineWidth, scalingSpeed);
+
+                //     // Lock the size once it's close to the target size
+                //     if (Math.abs(lineData.current.segmentLength - lineData.target.segmentLength) < 0.01) {
+                //         lineData.current.segmentLength = lineData.target.segmentLength;
+                //     }
+                //     if (Math.abs(lineData.current.lineWidth - lineData.target.lineWidth) < 0.01) {
+                //         lineData.current.lineWidth = lineData.target.lineWidth;
+                //     }
+                // }
             }
-
-            // // Handle Line Scaling
-            // if (handDrawnElements.line) {
-            //     const lineData = handDrawnElements.line;
-
-            //     // Smoothly scale the current segment length and line width to the target size using lerp
-            //     lineData.current.segmentLength = lerp(lineData.current.segmentLength, lineData.target.segmentLength, scalingSpeed);
-            //     lineData.current.lineWidth = lerp(lineData.current.lineWidth, lineData.target.lineWidth, scalingSpeed);
-
-            //     // Lock the size once it's close to the target size
-            //     if (Math.abs(lineData.current.segmentLength - lineData.target.segmentLength) < 0.01) {
-            //         lineData.current.segmentLength = lineData.target.segmentLength;
-            //     }
-            //     if (Math.abs(lineData.current.lineWidth - lineData.target.lineWidth) < 0.01) {
-            //         lineData.current.lineWidth = lineData.target.lineWidth;
-            //     }
-            // }
-        }
         });
     }
 
 
     let MasterOpacity = 1;
-let OpacityLowTrigger = false;
-let duration = 950; // Total fade duration in milliseconds
-let startTime; // Variable to store the start time of the animation
-let holdDuration = 35000; // How long to hold at fully faded in before fading out again
-let fadeComplete = false; // To track if fade-in is complete
-let fadeOutTimeout; // Variable to store the fade-out timeout
+    let OpacityLowTrigger = false;
+    let duration = 950; // Total fade duration in milliseconds
+    let startTime; // Variable to store the start time of the animation
+    let holdDuration = 35000; // How long to hold at fully faded in before fading out again
+    let fadeComplete = false; // To track if fade-in is complete
+    let fadeOutTimeout; // Variable to store the fade-out timeout
 
-// Clear any existing fadeOut timeout and set a new one
-function scheduleFadeOut() {
-    if (fadeOutTimeout) {
-        clearTimeout(fadeOutTimeout); // Cancel the previous fade-out if it was scheduled
+    // Clear any existing fadeOut timeout and set a new one
+    function scheduleFadeOut() {
+        if (fadeOutTimeout) {
+            clearTimeout(fadeOutTimeout); // Cancel the previous fade-out if it was scheduled
+        }
+
+        fadeOutTimeout = setTimeout(() => {
+            if (fadeComplete) { // Ensure that fade-out happens only if fade-in completed
+                OpacityLowTrigger = true;
+                startTime = Date.now();  // Reset startTime for fade-out
+                WordFader();  // Trigger fade-out
+            }
+        }, holdDuration); // Wait for 'holdDuration' before starting the fade-out
     }
 
-    fadeOutTimeout = setTimeout(() => {
-        if (fadeComplete) { // Ensure that fade-out happens only if fade-in completed
-            OpacityLowTrigger = true;
-            startTime = Date.now();  // Reset startTime for fade-out
-            WordFader();  // Trigger fade-out
-        }
-    }, holdDuration); // Wait for 'holdDuration' before starting the fade-out
-}
-
-// Ease-in-out quad function for smooth fading
-function easeInOutQuad(t) {
-    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-}
-
-function WordFader() {
-    let currentTime = Date.now();
-    let elapsed = currentTime - startTime;
-    let progress = Math.min(elapsed / duration, 1); // Clamp progress to 1
-
-    if (OpacityLowTrigger) {
-        // Fade out using easing function
-        MasterOpacity = 1 - easeInOutQuad(progress);
-
-        if (progress < 1) {
-            requestAnimationFrame(WordFader);
-        } else {
-            MasterOpacity = 0; // Ensure opacity is exactly 0 at the end
-            fadeComplete = false; // Reset fadeComplete after fade-out
-        }
-    } else {
-        // Fade in using easing function
-        MasterOpacity = easeInOutQuad(progress);
-
-        if (progress < 1) {
-            requestAnimationFrame(WordFader);
-        } else {
-            MasterOpacity = 1; // Ensure opacity is exactly 1 at the end
-            fadeComplete = true; // Mark that fade-in is complete
-            scheduleFadeOut(); // Safely trigger fade-out after fade-in is complete
-        }
+    // Ease-in-out quad function for smooth fading
+    function easeInOutQuad(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
     }
 
-    console.log(MasterOpacity); // Debugging
-}
+    function WordFader() {
+        let currentTime = Date.now();
+        let elapsed = currentTime - startTime;
+        let progress = Math.min(elapsed / duration, 1); // Clamp progress to 1
 
-// Trigger the fade-in manually
-function startFadeIn() {
-    // Remove the check to ensure fade-in always triggers
-    OpacityLowTrigger = false;
-    startTime = Date.now();  // Initialize startTime for fade-in
-    fadeComplete = false; // Reset this flag when starting a new fade-in
-    WordFader();  // Start fade-in
-}
+        if (OpacityLowTrigger) {
+            // Fade out using easing function
+            MasterOpacity = 1 - easeInOutQuad(progress);
+
+            if (progress < 1) {
+                requestAnimationFrame(WordFader);
+            } else {
+                MasterOpacity = 0; // Ensure opacity is exactly 0 at the end
+                fadeComplete = false; // Reset fadeComplete after fade-out
+            }
+        } else {
+            // Fade in using easing function
+            MasterOpacity = easeInOutQuad(progress);
+
+            if (progress < 1) {
+                requestAnimationFrame(WordFader);
+            } else {
+                MasterOpacity = 1; // Ensure opacity is exactly 1 at the end
+                fadeComplete = true; // Mark that fade-in is complete
+                scheduleFadeOut(); // Safely trigger fade-out after fade-in is complete
+            }
+        }
+
+        // console.log(MasterOpacity); // Debugging
+    }
+
+    // Trigger the fade-in manually
+    function startFadeIn() {
+        // Remove the check to ensure fade-in always triggers
+        OpacityLowTrigger = false;
+        startTime = Date.now();  // Initialize startTime for fade-in
+        fadeComplete = false; // Reset this flag when starting a new fade-in
+        WordFader();  // Start fade-in
+    }
 
 
 
-// 
+    // 
 
 
 
@@ -669,13 +672,30 @@ function startFadeIn() {
 
             // Draw the line based on the current size
             if (handDrawnElements?.line) {
-                //debugger;
-                //console.log('Drawing hand-drawn line');
-                generateAndDrawHandDrawnLineWithSeed(ctx, handDrawnElements.line, info.fillTextHeight, info.fillTextWidth, offsetX, margin, info, scaleFactor, style);
+                //// debugger;
+                //// console.log('Drawing hand-drawn line');
+                generateAndDrawHandDrawnLineWithSeed(
+                    // ctx,
+                    // info.fillTextWidth,
+                    // info.fillTextHeight,
+                    // offsetX,
+                    // scaleFactor,
+                    // style
+                    ctx, 
+                    handDrawnElements.line, 
+                    textWidth, 
+                    textHeight, 
+                    offsetX,
+                    offsetY, 
+                    margin, 
+                    info, 
+                    scaleFactor, 
+                    style
+                );
             }
 
             // put alpha back to 1 and turn off the blending mode
-            
+
             ctx.globalCompositeOperation = 'source-over';
 
             // ctx.filter = 'blur(0px)';  // Change the '5px' to adjust blur intensity
@@ -806,7 +826,7 @@ function startFadeIn() {
         const radiusY = (current.textHeight / 2.2 - margin * 2) * scaleFactor; // Scale radiusY using current vs target
 
         // Log for debugging
-        //////console.log(`Drawing circle with current textWidth: ${current.textWidth}, target textWidth: ${target.textWidth}, radiusX: ${radiusX}, radiusY: ${radiusY}`);
+        //////// console.log(`Drawing circle with current textWidth: ${current.textWidth}, target textWidth: ${target.textWidth}, radiusX: ${radiusX}, radiusY: ${radiusY}`);
 
         // Set stroke styles for the hand-drawn effect
         //ctx.strokeStyle = strokeStyle;
@@ -884,83 +904,118 @@ function startFadeIn() {
 
 
 
-// Seeded random number generator with better scaling
-function seededRandom(seed) {
-    const m = 0x80000000;  // 2^31
-    const a = 1103515245;
-    const c = 12345;
-    seed = (a * seed + c) % m;
-    return seed / m;  // Generates a number between 0 and 1
-}
-
-
-
-
-
-
-function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, offsetX, margin, info, scaleFactor, style) {
-    //console.log('Generating and drawing hand-drawn line with seed:', seed);
-
-   
-
-    // Follow the original structure exactly
-    const startX = -info.fillTextWidth * scaleFactor / 2 + offsetX * scaleFactor ;
-    const textWidthActual = info.fillTextWidth* scaleFactor - info.paddingWidth* scaleFactor * 2 ;
-    const endX = textWidthActual / 2 * 0.9;
-    const y = (info.fillTextHeight * scaleFactor )/ 2 - (info.paddingHeight*scaleFactor) * 2 ;  // Revert back to original logic
-
-    //console.log(`startX: ${startX}, endX: ${endX}, y: ${y}`);
-
-    const segmentLength = (endX - startX) / 5;
-    const points = [];
-
-    // Generate deterministic jitter using the seed
-    let currentX = startX;
-    for (let i = 0; i <= 5; i++) {
-        currentX = startX + i * segmentLength;
-
-        // Use the seed to create consistent jitter for X and Y
-        const jitterX = (seededRandom(seed + i) - 0.5) * 5;
-        const jitterY = (seededRandom(seed + i) - 0.5) * 5;
-
-        points.push({
-            x: currentX + jitterX,
-            y: y + jitterY
-        });
-        //console.log(`Point ${i}: x=${currentX + jitterX}, y=${y + jitterY}`);
+    // Seeded random number generator with better scaling
+    function seededRandom(seed) {
+        const m = 0x80000000;  // 2^31
+        const a = 1103515245;
+        const c = 12345;
+        seed = (a * seed + c) % m;
+        return seed / m;  // Generates a number between 0 and 1
     }
 
-    // Set the stroke style and other properties for the line
-    const strokeStyle = style.accentColor;  // Example stroke color
-    const globalAlpha = 1;
-    const lineWidth = info.paddedHeight / 25 * scaleFactor;  // Match original dynamic scaling
 
-    // Draw the line
-    ctx.save();  // Save the current canvas state
 
-    // Apply rotation (tilt) before drawing (if needed, enable it later)
-    // ctx.rotate(tiltAngle);
 
-    // Set stroke styles
-    ctx.strokeStyle = strokeStyle;
-    ctx.lineWidth = lineWidth;
 
-    ctx.beginPath();
 
-    // Move to the first point
-    ctx.moveTo(points[0].x, points[0].y);
+    function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, offsetX, offsetY, margin, info, scaleFactor, style) {
+        //// console.log('Generating and drawing hand-drawn line with seed:', seed);
 
-    // Draw the line by connecting all the points
-    for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y);
+
+
+        // Follow the original structure exactly
+        const startX = -info.fillTextWidth * scaleFactor / 2 + offsetX * scaleFactor;
+        const textWidthActual = textWidth;
+        const endX = textWidthActual / 2 * 0.65;
+        const y = (textHeight) - (offsetY * scaleFactor) ;  // Revert back to original logic
+
+        //// console.log(`startX: ${startX}, endX: ${endX}, y: ${y}`);
+
+        const segmentLength = (endX - startX) / 5;
+        const points = [];
+
+        // Generate deterministic jitter using the seed
+        let currentX = startX;
+        for (let i = 0; i <= 5; i++) {
+            currentX = startX + i * segmentLength;
+
+            // Use the seed to create consistent jitter for X and Y
+            const jitterX = (seededRandom(seed + i) - 0.5) * 5;
+            const jitterY = (seededRandom(seed + i) - y/10) * 5;
+
+            points.push({
+                x: currentX + jitterX,
+                y: y + jitterY * scaleFactor
+            });
+            //// console.log(`Point ${i}: x=${currentX + jitterX}, y=${y + jitterY}`);
+        }
+
+        // Set the stroke style and other properties for the line
+        const strokeStyle = style.accentColor;  // Example stroke color
+        const globalAlpha = 1;
+        const lineWidth = textHeight / 25;  // Match original dynamic scaling
+
+        // Draw the line
+        ctx.save();  // Save the current canvas state
+
+        // Apply rotation (tilt) before drawing (if needed, enable it later)
+        // ctx.rotate(tiltAngle);
+
+        // Set stroke styles
+        ctx.strokeStyle = strokeStyle;
+        ctx.lineWidth = lineWidth;
+
+        ctx.beginPath();
+
+        // Move to the first point
+        ctx.moveTo(points[0].x, points[0].y);
+
+        // Draw the line by connecting all the points
+        for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(points[i].x, points[i].y);
+        }
+
+        // Render the line
+        ctx.stroke();
+
+        // Restore the canvas state
+        ctx.restore();
     }
 
-    // Render the line
-    ctx.stroke();
+    // function generateAndDrawHandDrawnLineWithSeed(ctx, textWidth, textHeight, offsetX, scaleFactor, style) {
+    //     // Determine start and end positions for the line
+    //     const startX = -textWidth * scaleFactor / 2 + offsetX * scaleFactor;
+    //     const endX = textWidth * scaleFactor / 2 - offsetX * scaleFactor;
 
-    // Restore the canvas state
-    ctx.restore();
-}
+    //     // Set the y coordinate to be 1/4th of the textHeight from the bottom
+    //     const y = textHeight / 4;
+
+    //     // Set the stroke style and other properties for the line
+    //     const strokeStyle = style.accentColor;  // Example stroke color
+    //     const lineWidth = 2;  // Set a fixed line width
+
+    //     // Draw the line
+    //     ctx.save();  // Save the current canvas state
+
+    //     // Set stroke styles
+    //     ctx.strokeStyle = strokeStyle;
+    //     ctx.lineWidth = lineWidth;
+
+    //     ctx.beginPath();
+
+    //     // Move to the start point
+    //     ctx.moveTo(startX, y);
+
+    //     // Draw a straight line to the end point
+    //     ctx.lineTo(endX, y);
+
+    //     // Render the line
+    //     ctx.stroke();
+
+    //     // Restore the canvas state
+    //     ctx.restore();
+    // }
+
 
 
 
@@ -975,40 +1030,95 @@ function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, 
 
     gameLoop(); // Start the game loop
 
+    // function dynamicWeightFactor() {
+    //     // Calculate the total word count
+    //      const totalWordCount = Array.from(wordsMap.values()).reduce((acc, word) => acc + word.count, 0);
+    //    // const totalWordCount = wordsMap.size; // Use the size of the wordsMap for the total count
+    //    // debugger;
+    //     // Base weight factor calculation (logarithmic)
+    //     const baseWeight = 105;
+    //     let weightFactor = baseWeight / (1 + Math.log(totalWordCount + 1)); // The +1 avoids log(0)
+
+    //     // Calculate additional weight for words with count > 1
+    //     const extraWeight = Array.from(wordsMap.values()).reduce((acc, word) => {
+    //         if (word.count > 1) {
+    //             const wordImpact = Math.log(word.count * 0.05);  // Logarithmic impact based on count
+    //             return acc + wordImpact;  // Accumulate the impact of words with count > 1
+    //         }
+    //         return acc;
+    //     }, 0);
+
+    //     // Subtract a portion of the extra weight from the original weight factor
+
+    //     console.log('weightFactor:', weightFactor);
+
+    //     weightFactor += extraWeight * 0.1;  // Scale the subtraction to keep it moderate
+
+    //     console.log('after extraWeight:', weightFactor);
+    //     let largerInTheBeginning
+    //     let extraWeightMultiplier
+    //     if (totalWordCount < 100) {
+    //         // map the extra weight to a range of 1 to 10 based on the total word count
+    //         extraWeightMultiplier = 1 + (totalWordCount / 100);
+    //         console.log('extraWeightMultiplier:', extraWeightMultiplier);
+    //         console.log('extraWeight:', extraWeight);
+    //         console.log('extraWeight * 10:', extraWeight * extraWeightMultiplier);
+    //         largerInTheBeginning = 100 - (totalWordCount - (extraWeight*extraWeightMultiplier));
+    //         console.log('largerInTheBeginning:', largerInTheBeginning);
+    //         // if this is returning a negative number then we need to set it to 0
+    //         if (largerInTheBeginning < 0) {
+    //             largerInTheBeginning = 0;
+    //         }
+    //     } else {
+    //         largerInTheBeginning = 0;
+    //     }
+
+    //     // Prevent the weight factor from dropping below 1
+    //     weightFactor = Math.max(1, weightFactor) + largerInTheBeginning;
+
+    //     // Log results for debugging
+    //     console.log('Total word count:', totalWordCount);
+    //     console.log('Extra weight from words with count > 1:', extraWeight);
+    //     console.log('Final weight factor:', weightFactor);
+
+    //     return weightFactor;
+    // }
+
     function dynamicWeightFactor() {
-        // Calculate the total word count
-        const totalWordCount = Array.from(wordsMap.values()).reduce((acc, word) => acc + word.count, 0);
+        const totalWords = wordsMap.size;
+        const baseWeightFactor = 80; // Adjust this base value as needed
+        const weightFactor = baseWeightFactor / Math.sqrt(totalWords) * 5;
+        console.log('weightFactor:', weightFactor);
+        // draw tge weight factor in the top right corner of the canvas
 
-        // Base weight factor calculation (logarithmic)
-        const baseWeight = 105;
-        let weightFactor = baseWeight / (1 + Math.log(totalWordCount + 1)); // The +1 avoids log(0)
-
-        // Calculate additional weight for words with count > 1
-        const extraWeight = Array.from(wordsMap.values()).reduce((acc, word) => {
-            if (word.count > 1) {
-                const wordImpact = Math.log(word.count * .65);  // Logarithmic impact based on count
-                return acc + wordImpact;  // Accumulate the impact of words with count > 1
-            }
-            return acc;
-        }, 0);
-
-        // Subtract a portion of the extra weight from the original weight factor
-        weightFactor -= extraWeight * 0.1;  // Scale the subtraction to keep it moderate
-
-        // Prevent the weight factor from dropping below 1
-        weightFactor = Math.max(1, weightFactor);
-
-        // Log results for debugging
-        ////console.log('Total word count:', totalWordCount);
-        ////console.log('Extra weight from words with count > 1:', extraWeight);
-        ////console.log('Final weight factor:', weightFactor);
 
         return weightFactor;
     }
 
+    function normalizeCount(value, minCount, maxCount, newMin = 1, newMax = 3) {
+        if (minCount === maxCount) {
+            return newMin; // or simply return the value itself if you prefer
+        }
+        return ((value - minCount) / (maxCount - minCount)) * (newMax - newMin) + newMin;
+    }
+
+    function mapWordsToArray() {
+        // Find min and max word counts
+        const wordCounts = Array.from(wordsMap.values()).map(word => word.count);
+        const minCount = Math.min(...wordCounts);
+        const maxCount = Math.max(...wordCounts);
+
+        return Array.from(wordsMap.values()).map(word => [
+            word.string,
+            normalizeCount(word.count, minCount, maxCount), // Normalized count from 2 - 5
+            word.fontFamily,
+            word.id
+        ]);
+    }
 
 
     function updateWordCloud() {
+        console.log('Updating word cloud');
         // Update the weight factor based on the total word count
         weightFactor = dynamicWeightFactor();
         const wordList = mapWordsToArray();
@@ -1045,6 +1155,7 @@ function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, 
     // triangle-upright
     // pentagon
     // star
+    let updateTimeout;
 
     function setup() {
         // Establish socket connection
@@ -1071,27 +1182,61 @@ function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, 
         });
 
 
+        // socket.on('new_word', function (word) {
+        //     // //////// console.log('New word:', word);
+        //     // Handle the new word as before
+        //     if (wordsMap.has(word.id)) {
+        //         // //////// console.log('Word already exists:', word);
+        //         let wordObj = wordsMap.get(word.id);
+        //         wordObj.count = word.count;
+        //         // update the word count in the word map
+        //         wordsMap.set(word.id, wordObj);
+        //         updateWordCloud();
+
+        //         // updateWordPhysics(word.id); // Update position/mass/etc.
+        //     } else {
+        //         // //////// console.log('New word:', word);
+        //         wordQueue.push(word);
+        //         wordIds.add(word.id);
+        //         createWordObject(word);
+        //     }
+        // });
+
         socket.on('new_word', function (word) {
-            // //////console.log('New word:', word);
-            // Handle the new word as before
             if (wordsMap.has(word.id)) {
-                // //////console.log('Word already exists:', word);
+                // If the word already exists, update its count
                 let wordObj = wordsMap.get(word.id);
                 wordObj.count = word.count;
-                // update the word count in the word map
                 wordsMap.set(word.id, wordObj);
-                updateWordCloud();
 
-                // updateWordPhysics(word.id); // Update position/mass/etc.
+                // Schedule a word cloud update
+                scheduleUpdateWordCloud();
             } else {
-                // //////console.log('New word:', word);
+                // If it's a new word, add it to the map and other structures
                 wordQueue.push(word);
                 wordIds.add(word.id);
                 createWordObject(word);
+
+                // Schedule a word cloud update
+                scheduleUpdateWordCloud();
             }
         });
 
+
     }
+
+    function scheduleUpdateWordCloud() {
+        // Clear any previous timeout to avoid redundant updates
+        if (updateTimeout) {
+            clearTimeout(updateTimeout);
+        }
+
+        // Set a new timeout to update the word cloud
+        updateTimeout = setTimeout(() => {
+            updateWordCloud();
+        }, 100); // Adjust the delay as needed (e.g., 100ms)
+    }
+
 
 
 
@@ -1100,7 +1245,7 @@ function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, 
         fetch(`http://localhost:5000/strings?page=${page}&per_page=${perPage}`)
             .then(response => response.json())
             .then(data => {
-                // //////console.log("Fetched data:", data);
+                // //////// console.log("Fetched data:", data);
                 data.data.forEach(word => {
                     if (!wordIds.has(word.id)) {
                         createWordObject(word);
@@ -1113,6 +1258,8 @@ function generateAndDrawHandDrawnLineWithSeed(ctx, seed, textWidth, textHeight, 
                     fetchWords(); // Fetch more if there’s more data
                 } else {
                     allWordsFetched = true;
+                    updateWordCloud(); // Update the word cloud once all words have been fetched
+
                 }
             })
             .catch(error => console.error('Error fetching words:', error));
