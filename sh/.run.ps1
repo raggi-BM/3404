@@ -78,8 +78,7 @@ Get-Content requirements.txt | ForEach-Object {
 # Step 10: Run the app
 Clear-Host
 Write-Host "Running the app..."
+Start-Process -NoNewWindow python app.py
 Start-Process "http://localhost:5000/display"
 Start-Process "http://localhost:5000/input"
 Start-Process "http://localhost:5000/moderator"
-python app.py
-
