@@ -20,7 +20,7 @@ Point to the Batch File:
 
 In the Interface File Name field, type the path to your batch file:
 vbnet
-Copy code
+
 C:\path\to\chrome-kiosk.bat
 Apply and Reboot:
 
