@@ -678,4 +678,4 @@ if __name__ == '__main__':
     print("QR Code Moderator Frontend:")
     print("################################")
     qr_to_terminal(f"http://{local_ip}:5000/moderator")
-    socketio.run(app, debug=True, host='0.0.0.0', allow_unsafe_werkzeug=True)
+    socketio.run(app, debug=False, host='0.0.0.0', allow_unsafe_werkzeug=True)
