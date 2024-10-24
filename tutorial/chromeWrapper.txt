@@ -31,7 +31,7 @@ Click OK, apply changes, and restart your computer.
 
 
 
-Steps to Allow Only the USB Microphone:
+Steps to Allow Only the USB Microphone / or any other spesisific USB device:
 
 ## Have not tested this solution yet
 
