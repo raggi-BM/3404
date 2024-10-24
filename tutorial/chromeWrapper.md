@@ -1,41 +1,41 @@
 ## Tested and worked on windows 10 
 
-Create the batch file:
+#### Create the batch file:
 
-'''
+```
 @echo off
 start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --kiosk http://10.16.27.157:5000/input --user-data-dir="C:\Users\<user>\AppData\Local\Google\Chrome\User Data\Profile 1" --disable-translate --no-first-run --disable-infobars --disable-pinch --overscroll-history-navigation=0 --disable-features=TranslateUI,AutofillKeyPressTriggeredHeuristic --disable-gesture-requirement-for-media-playback --disable-sync --no-default-browser-check --disable-extensions --disable-pdf-viewer-update --disable-new-tab-first-run --unsafely-treat-insecure-origin-as-secure=http://10.16.27.157:5000/input --disable-web-security --allow-running-insecure-content --use-fake-ui-for-media-stream
 exit
-'''
+```
 
-Save the batch file as chrome-kiosk.bat (e.g., on your C:\ drive).
+- Save the batch file as chrome-kiosk.bat (e.g., on your C:\ drive).
 Open Group Policy Editor:
 
-Press Win + R, type gpedit.msc, and hit Enter.
+- Press Win + R, type gpedit.msc, and hit Enter.
 Navigate to Custom User Interface:
 
-Go to User Configuration → Administrative Templates → System → Custom User Interface.
+- Go to User Configuration → Administrative Templates → System → Custom User Interface.
 Enable Custom User Interface:
 
-Double-click Custom User Interface, select Enabled.
+- Double-click Custom User Interface, select Enabled.
 Point to the Batch File:
 
-In the Interface File Name field, type the path to your batch file:
+- In the Interface File Name field, type the path to your batch file:
 vbnet
 
-C:\path\to\chrome-kiosk.bat
+- C:\path\to\chrome-kiosk.bat
 Apply and Reboot:
 
-Click OK, apply changes, and restart your computer.
+- Click OK, apply changes, and restart your computer.
 
 
 
 
-Steps to Allow Only the USB Microphone / or any other spesisific USB device:
+## Steps to Allow Only spesisific USB devices
 
-## Have not tested this solution yet
+Have not tested this solution yet
 
-Find the USB Microphone Hardware ID:
+Find the USB devices Hardware ID:
 
 Press Win + X, select Device Manager.
 Find your microphone under Sound, video and game controllers, right-click, select Properties.
@@ -66,7 +66,7 @@ alternative solution
 
 conditional usb device access
 
-'''
+```
 @echo off
 
 # Start Chrome in kiosk mode
@@ -91,7 +91,6 @@ powershell -ExecutionPolicy Bypass -Command "& {
     Set-ItemProperty -Path $regPath -Name 'DenyUnspecified' -Value 0;
     Remove-Item -Path $allowedIdsPath -Recurse;
 }"
-'''
+```
 
 we will need to test this solution and see if it works
-'''
