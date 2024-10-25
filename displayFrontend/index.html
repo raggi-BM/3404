@@ -249,7 +249,7 @@
 
     if (missingWordIds.length > 0 && (weightFactor - weightAdjustment) > minWeightFactor) {
         // Increment weightAdjustment to reduce weightFactor
-        weightAdjustment += 25; // Adjust the increment as needed
+        weightAdjustment += 20; // Adjust the increment as needed
 
         // Regenerate the word cloud with the new weight factor
         updateWordCloud();
@@ -266,9 +266,11 @@
     });
 
     // Reset weightAdjustment for the next iteration
-    // weightAdjustment = 0;
+    //  weightAdjustment = 0;
     if(weightAdjustment > 0){
-        weightAdjustment = weightAdjustment - 5;
+        console.log('weightAdjustment', weightAdjustment);
+        weightAdjustment = weightAdjustment - 10;
+        console.log('weightAdjustment after:', weightAdjustment);
     }
     if (weightAdjustment < 0) {
         weightAdjustment = 0;
