@@ -41,4 +41,4 @@ def insert_words_from_file(file_path):
 # Usage example
 if __name__ == '__main__':
     # Replace 'words.txt' with your actual file path
-    insert_words_from_file('test/positive.txt')
+    insert_words_from_file('test/mfa.txt')

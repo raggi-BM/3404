@@ -41,11 +41,14 @@
     let allWordsFetched = false;
     let weightFactor = 50; // Default weight factor for WordCloud
     const margin = 4; // Margin for the WordCloud
+    let weightAdjustment = 0;
+    const minWeightFactor = 25; // Set your minimum acceptable weight factor
+
 
     var hiddenCanvas = document.getElementById('wordCloudCanvas');
     var fullScreenCanvas = document.getElementById('fullScreenCanvas');
     var matterCanvas = document.getElementById('matterCanvas');
-    var ctx = fullScreenCanvas.getContext('2d');
+    var ctx = fullScreenCanvas.getContext('2d', { willReadFrequently: true });
 
     let canvasCenter = { x: fullScreenCanvas.width / 2, y: fullScreenCanvas.height / 2 };
 
@@ -232,28 +235,45 @@
 
 
     function onWordCloudComplete() {
+    var wordCloudData = getWordCloudData(); // Retrieves positions from WordCloud.js
 
+    wordCloudData.forEach((word) => {
+        delete word.info.occupied;
+    });
 
-        var wordCloudData = getWordCloudData(); // Assume this gives you the positions from WordCloud.js
-        // Iterate over existing wordBodies and remove any that are not in wordCloudData
-        // delete the wordCloudData.info.occupied section from all the words
-
-        wordCloudData.forEach((word) => {
-            delete word.info.occupied;
-        });
-
-           // Convert wordCloudData into a Set of wordIds for faster lookup
+    // Create a Set of wordIds present in the word cloud
     const wordIdsInCloudData = new Set(wordCloudData.map(data => data.wordId));
 
-// Iterate over existing wordBodies and remove any that are not in wordCloudData
-Object.keys(wordBodies).forEach((wordId) => {
-    if (!wordIdsInCloudData.has(parseInt(wordId))) {
-        // Remove word body from the world and delete it from wordBodies
-        World.remove(world, wordBodies[wordId].body);
-        delete wordBodies[wordId];
+    // Identify missing words
+    const missingWordIds = Array.from(wordsMap.keys()).filter(wordId => !wordIdsInCloudData.has(parseInt(wordId)));
+
+    if (missingWordIds.length > 0 && (weightFactor - weightAdjustment) > minWeightFactor) {
+        // Increment weightAdjustment to reduce weightFactor
+        weightAdjustment += 25; // Adjust the increment as needed
+
+        // Regenerate the word cloud with the new weight factor
+        updateWordCloud();
+        return; // Exit to wait for the next onWordCloudComplete call
     }
-});
-        startFadeIn(); // This will initiate the fade-in, followed by hold and fade-out
+
+    // If weightFactor is too low, remove missing words as before
+    Object.keys(wordBodies).forEach((wordId) => {
+        if (!wordIdsInCloudData.has(parseInt(wordId))) {
+            // Remove word body from the world and delete it from wordBodies
+            World.remove(world, wordBodies[wordId].body);
+            delete wordBodies[wordId];
+        }
+    });
+
+    // Reset weightAdjustment for the next iteration
+    // weightAdjustment = 0;
+    if(weightAdjustment > 0){
+        weightAdjustment = weightAdjustment - 5;
+    }
+    if (weightAdjustment < 0) {
+        weightAdjustment = 0;
+    }
+    startFadeIn(); // Initiate fade-in animation
 
 
         wordCloudData.forEach((data) => {
@@ -681,15 +701,15 @@ Object.keys(wordBodies).forEach((wordId) => {
                     // offsetX,
                     // scaleFactor,
                     // style
-                    ctx, 
-                    handDrawnElements.line, 
-                    textWidth, 
-                    textHeight, 
+                    ctx,
+                    handDrawnElements.line,
+                    textWidth,
+                    textHeight,
                     offsetX,
-                    offsetY, 
-                    margin, 
-                    info, 
-                    scaleFactor, 
+                    offsetY,
+                    margin,
+                    info,
+                    scaleFactor,
                     style
                 );
             }
@@ -927,7 +947,7 @@ Object.keys(wordBodies).forEach((wordId) => {
         const startX = -info.fillTextWidth * scaleFactor / 2 + offsetX * scaleFactor;
         const textWidthActual = textWidth;
         const endX = textWidthActual / 2 * 0.65;
-        const y = (textHeight) - (offsetY * scaleFactor) ;  // Revert back to original logic
+        const y = (textHeight) - (offsetY * scaleFactor);  // Revert back to original logic
 
         //// console.log(`startX: ${startX}, endX: ${endX}, y: ${y}`);
 
@@ -941,7 +961,7 @@ Object.keys(wordBodies).forEach((wordId) => {
 
             // Use the seed to create consistent jitter for X and Y
             const jitterX = (seededRandom(seed + i) - 0.5) * 5;
-            const jitterY = (seededRandom(seed + i) - y/10) * 5;
+            const jitterY = (seededRandom(seed + i) - y / 10) * 5;
 
             points.push({
                 x: currentX + jitterX,
@@ -1085,17 +1105,25 @@ Object.keys(wordBodies).forEach((wordId) => {
     // }
 
     function dynamicWeightFactor() {
-        const totalWords = wordsMap.size;
-        const baseWeightFactor = 80; // Adjust this base value as needed
-        const weightFactor = baseWeightFactor / Math.sqrt(totalWords) * 5;
-        console.log('weightFactor:', weightFactor);
-        // draw tge weight factor in the top right corner of the canvas
+    const totalWords = wordsMap.size;
+    const baseWeightFactor = 80; // Adjust this base value as needed
+    let weightFactor = (baseWeightFactor / Math.sqrt(totalWords)) * 5;
+
+    // Subtract the weightAdjustment
+    weightFactor -= weightAdjustment;
+
+    // Ensure weightFactor doesn't go below the minimum
+    weightFactor = Math.max(weightFactor, minWeightFactor);
+
+    // Round to the nearest integer
+    weightFactor = Math.round(weightFactor);
+
+    console.log('Adjusted weightFactor:', weightFactor);
+    return weightFactor;
+}
 
 
-        return weightFactor;
-    }
-
-    function normalizeCount(value, minCount, maxCount, newMin = 1, newMax = 3) {
+    function normalizeCount(value, minCount, maxCount, newMin = 1, newMax = 4) {
         if (minCount === maxCount) {
             return newMin; // or simply return the value itself if you prefer
         }

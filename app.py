@@ -180,8 +180,12 @@ def get_all_strings():
         cursor.execute('SELECT COUNT(*) FROM strings')
         total = cursor.fetchone()[0]
 
-        # Fetch the strings with all details (without filtering by approval)
-        cursor.execute('SELECT * FROM strings LIMIT ? OFFSET ?',
+        # # Fetch the strings with all details (without filtering by approval)
+        # cursor.execute('SELECT * FROM strings LIMIT ? OFFSET ?',
+        #                (per_page, offset))
+        # rows = cursor.fetchall()
+        # Fetch the strings ordered by id descending
+        cursor.execute('SELECT * FROM strings ORDER BY id DESC LIMIT ? OFFSET ?',
                        (per_page, offset))
         rows = cursor.fetchall()
 
@@ -382,12 +386,30 @@ def store_string():
                               "string": lower_string, "count": new_count})
 
         # Emit all stored words to the moderator dashboard
-        cursor.execute('SELECT id, string, approved, count FROM strings')
+        # cursor.execute('SELECT id, string, approved, count FROM strings')
+        # all_strings = cursor.fetchall()
+
+        # socketio.emit('all_words', [
+        #     {"id": row[0], "string": row[1],
+        #         "approved": bool(row[2]), "count": row[3]}
+        #     for row in all_strings
+        # ])
+        cursor.execute(
+            'SELECT id, string, approved_true_count, approved_false_count, count, human_approved FROM strings ORDER BY id DESC')
         all_strings = cursor.fetchall()
 
         socketio.emit('all_words', [
-            {"id": row[0], "string": row[1],
-                "approved": bool(row[2]), "count": row[3]}
+            {
+                "id": row[0],
+                "string": row[1],
+                "approved": calculate_approval(
+                    row[2],  # approved_true_count
+                    row[3],  # approved_false_count
+                    row[4],  # total_count
+                    manual_override=row[5]  # human_approved
+                ),
+                "count": row[4]
+            }
             for row in all_strings
         ])
 

@@ -113,7 +113,7 @@ if (!window.clearImmediate) {
       return false
     }
 
-    var ctx = canvas.getContext('2d')
+    var ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) {
       return false
     }
@@ -775,7 +775,9 @@ if (!window.clearImmediate) {
       // Get fontWeight that will be used to set ctx.font and font style rule
       var fontWeight = getTextFontWeight ? getTextFontWeight(word, weight, fontSize, extraDataArray) : settings.fontWeight;
 
-      var ctx = elements[0].getContext('2d');
+      // var ctx = elements[0].getContext('2d');
+      var ctx = elements[0].getContext('2d', { willReadFrequently: true });
+
       var mu = info.mu;
 
       // Calculate the pixel positions

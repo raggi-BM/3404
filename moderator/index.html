@@ -13,7 +13,7 @@
             color: #343a40;
             margin: 0;
             line-height: 1.6;
-            
+
         }
 
         .search-container {
@@ -98,6 +98,12 @@
         .right-column {
             overflow-x: auto;
             margin-top: 10px;
+        }
+
+        .count {
+
+            color: #891af5;
+
         }
 
         /* Input Styles */
@@ -185,6 +191,17 @@
             opacity: 0;
             width: 0;
             height: 0;
+        }
+
+        .word {
+            font-weight: bold;
+            /* black */
+            color: #495057;
+            /* make the first letter uppercase; */
+        }
+
+        .word::first-letter {
+            text-transform: uppercase;
         }
 
         .slider {
@@ -405,20 +422,26 @@
                     const tr = document.createElement('tr');
                     tr.className = row.approved ? '' : 'unapproved';
                     tr.innerHTML = `
-                <td class="toggle-container" style="width: 70px;">
-                    <label class="toggle-switch">
-                        <input type="checkbox" ${row.approved ? 'checked' : ''} onchange="toggleApproval(${row.id}, this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </td>
-                <td>${row.string}</td>
-                <td style="width: 70px;">
-                    <button class="delete-button" onclick="deleteString(${row.id})">Delete</button>
-                </td>
-            `;
+            <td class="toggle-container" style="width: 70px;">
+                <label class="toggle-switch">
+                    <input type="checkbox" ${row.approved ? 'checked' : ''} onchange="toggleApproval(${row.id}, this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </td>
+            <td><span class="count">${row.count}</span> - <span class='word'>${row.string}</span></td>
+            <td style="width: 70px;">
+                <button class="delete-button" onclick="deleteString(${row.id})">Delete</button>
+            </td>
+        `;
                     tableBody.appendChild(tr);
                 });
+                // Apply the uppercase transformation to the first letter
+                document.querySelectorAll('.word').forEach(element => {
+                    const text = element.textContent;
+                    element.innerHTML = `<span style="text-transform: uppercase;">${text.charAt(0)}</span>${text.slice(1)}`;
+                });
             }
+
 
             window.toggleApproval = function (id, approved) {
                 console.log(`Toggling approval for ID ${id} to ${approved}`);
@@ -458,6 +481,8 @@
 
             fetchData();
         });
+
+
     </script>
 
 </body>
