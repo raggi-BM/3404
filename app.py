@@ -80,12 +80,12 @@ def init_db():
 
 def calculate_approval(approved_true_count, approved_false_count, total_count, manual_override=False):
     # Debugging: Log the inputs
-    print(
-        f"Calculating approval for true: {approved_true_count}, false: {approved_false_count}, manual_override: {manual_override}")
+    # print(
+    #     f"Calculating approval for true: {approved_true_count}, false: {approved_false_count}, manual_override: {manual_override}")
 
     # If manually approved, return True regardless of AI results
     if manual_override:
-        print("Manual override detected, returning True")
+        # print("Manual override detected, returning True")
         return True
 
     # Calculate the total count from true and false counts
@@ -101,19 +101,19 @@ def calculate_approval(approved_true_count, approved_false_count, total_count, m
     approval_ratio = approved_true_count / total_count
 
     # Debugging: Log the ratio
-    print(f"Approval ratio: {approval_ratio}")
+    # print(f"Approval ratio: {approval_ratio}")
 
     # If the difference between true and false is small, let's treat it conservatively
     if abs(approved_true_count - approved_false_count) <= 2:
-        print("Small difference between true and false counts, returning False")
+       # print("Small difference between true and false counts, returning False")
         return False  # Conservative decision, requires strong majority for approval
 
     # Check if the approval ratio meets the confidence threshold
     if approval_ratio >= confidence_threshold:
-        print("Approval ratio exceeds threshold, returning True")
+        # print("Approval ratio exceeds threshold, returning True")
         return True
     else:
-        print("Approval ratio below threshold, returning False")
+       # print("Approval ratio below threshold, returning False")
         return False
 
 
@@ -326,9 +326,12 @@ def store_string():
                     for _ in range(5):
                         is_appropriate = check_content_appropriateness(
                             lower_string)
+                        print(f"AI decision: {is_appropriate}")
                         if is_appropriate:
+                            print(f"AI approved: {lower_string}")
                             approved_true_count += 1
                         else:
+                            print(f"AI disapproved: {lower_string}")
                             approved_false_count += 1
 
                     # Update counts and recalculate AI approval
@@ -357,9 +360,12 @@ def store_string():
                     for _ in range(5):
                         is_appropriate = check_content_appropriateness(
                             lower_string)
+                        # print(f"AI decision: {is_appropriate}")
                         if is_appropriate:
+
                             approved_true_count += 1
                         else:
+
                             approved_false_count += 1
 
                     new_count = 1
@@ -367,6 +373,7 @@ def store_string():
                     # Calculate approval using the custom function
                     final_approved = calculate_approval(
                         approved_true_count, approved_false_count, new_count)
+                    print(f"Final AI approval decision: {final_approved}")
                 else:
                     # If dev flag is set, automatically approve the string
                     final_approved = True
